@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Animated, Image, Keyboard, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
@@ -66,6 +66,7 @@ export default function LeaderboardScreen() {
 
   const anim = useRef(new Animated.Value(mode === 'bloopies' ? 0 : 1)).current;
 
+  // smooth toggle effect
   useEffect(() => {
     Animated.timing(anim, {
       toValue: mode === 'bloopies' ? 0 : 1,
@@ -87,6 +88,26 @@ export default function LeaderboardScreen() {
   const activeChipBg = mode === 'bloopies' ? 'bg-teal-600' : 'bg-red-500';
   const activeChipText = 'text-white';
 
+  const PERIODS = ['weekly', 'daily', 'monthly'];
+  const periodIndex = PERIODS.indexOf(filter); // 0/1/2
+  const periodAnim = useRef(new Animated.Value(periodIndex)).current;
+  const [segWidth, setSegWidth] = useState(0);
+
+  useEffect(() => {
+    Animated.timing(periodAnim, {
+      toValue: periodIndex,
+      duration: 180,
+      useNativeDriver: true, // translateX only
+    }).start();
+  }, [periodIndex, periodAnim]);
+
+  const thumbTranslateX = periodAnim.interpolate({
+  inputRange: [0, 1, 2],
+  outputRange: [0, segWidth, segWidth * 2],
+  });
+
+  const activeHex = mode === 'bloopies' ? '#0d9488' : '#ef4444';
+
   const gradientColors = mode == 'bloopies'
     ? ['#F7FBF8', '#CBE2D3', '#A1C2A8'] // green
     : ['#FFF5F5', '#F7B6B6', '#F08A8A']; // red
@@ -107,6 +128,7 @@ export default function LeaderboardScreen() {
       end={{ x: 1, y: 0.85 }}
       style={{ flex: 1, paddingTop: insets.top }}
     >
+      <Pressable style={{ flex: 1 }} onPress={Keyboard.dismiss}>
 
     {/* Header */}
     <View className="px-4 pt-10 pb-4">
@@ -147,26 +169,61 @@ export default function LeaderboardScreen() {
       </View>
     </View>
 
-    {/* Filter buttons */}
-      <View className="flex-row gap-2 px-4 pb-4">
-        {['weekly', 'daily', 'monthly'].map((period) => (
-          <Pressable
-            key={period}
-            onPress={() => setFilter(period)}
-            className={`flex-1 rounded-full py-2 px-5 ${
-              filter === period ? activeChipBg : 'bg-gray-200'
-            }`}
-          >
-            <Text
-              className={`text-center font-semibold text-base ${
-                filter === period ? activeChipText : 'text-black'
-              }`}
-            >
-              {period.charAt(0).toUpperCase() + period.slice(1)}
-            </Text>
-          </Pressable>
-        ))}
+    {/* Segmented Period Control (animated) */}
+    <View className="px-4 pb-4">
+      <View
+        onLayout={(e) => {
+          const w = e.nativeEvent.layout.width;
+          setSegWidth(w / 3);
+        }}
+        style={{
+          height: 44,
+          borderRadius: 999,
+          backgroundColor: 'rgba(255,255,255,0.75)',
+          borderColor: 'rgba(0,0,0,0.08)',
+          borderWidth: 1,
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        {/* sliding thumb */}
+        <Animated.View
+          style={{
+            position: 'absolute',
+            top: 2,
+            left: 2,
+            width: Math.max(0, segWidth - 4),
+            height: 40,
+            borderRadius: 999,
+            transform: [{ translateX: thumbTranslateX }],
+            backgroundColor: activeHex,
+          }}
+        />
+
+        {/* labels */}
+        <View style={{ flexDirection: 'row', height: '100%' }}>
+          {PERIODS.map((period) => {
+            const selected = filter === period;
+            return (
+              <Pressable
+                key={period}
+                onPress={() => setFilter(period)}
+                style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Text style={{ fontWeight: '600', color: selected ? 'white' : 'black' }}>
+                  {period.charAt(0).toUpperCase() + period.slice(1)}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
       </View>
+    </View>
+
     {/* Search bar */}
             <View className="px-4 pb-4">
               <View className="flex-row items-center bg-white border border-gray-300 rounded-full px-4 py-3">
@@ -181,46 +238,46 @@ export default function LeaderboardScreen() {
               </View>
             </View>
 
-      <ScrollView
-          className="flex-1"
-          style={{ backgroundColor: 'transparent' }}
-          contentContainerStyle={{ paddingBottom: 96 + 72 + insets.bottom }}
-        >
+        <ScrollView
+            className="flex-1"
+            style={{ backgroundColor: 'transparent' }}
+            contentContainerStyle={{ paddingBottom: 96 + 72 + insets.bottom }}
+          >
 
-        {/* Leaderboard entries */}
-        <View className="px-4 pb-8">
-          <View className="gap-2">
-            {filteredData.map((entry, idx) => (
-              <View
-                key={entry.id}
-                className="flex-row items-center justify-between bg-white border border-gray-300 rounded-lg p-3"
-              >
-                {/* Medal emoji and rank */}
-                <View className="flex-row items-center gap-3">
-                  <Text className="text-xl">🥉</Text>
-                  <Text className="text-lg font-semibold text-black">{idx + 1}</Text>
-                </View>
-
-                {/* Avatar, name, and handle */}
-                <View className="flex-1 flex-row items-center gap-3 ml-2">
-                  <Image
-                    source={{ uri: entry.avatar }}
-                    className="w-14 h-14 rounded-full"
-                  />
-                  <View className="flex-1">
-                    <Text className="text-base font-semibold text-black">{entry.name}</Text>
-                    <Text className="text-sm text-gray-600">{entry.handle}</Text>
+          {/* Leaderboard entries */}
+          <View className="px-4 pb-8">
+            <View className="gap-2">
+              {filteredData.map((entry, idx) => (
+                <View
+                  key={entry.id}
+                  className="flex-row items-center justify-between bg-white border border-gray-300 rounded-lg p-3"
+                >
+                  {/* Medal emoji and rank */}
+                  <View className="flex-row items-center gap-3">
+                    <Text className="text-xl">🥉</Text>
+                    <Text className="text-lg font-semibold text-black">{idx + 1}</Text>
                   </View>
+
+                  {/* Avatar, name, and handle */}
+                  <View className="flex-1 flex-row items-center gap-3 ml-2">
+                    <Image
+                      source={{ uri: entry.avatar }}
+                      className="w-14 h-14 rounded-full"
+                    />
+                    <View className="flex-1">
+                      <Text className="text-base font-semibold text-black">{entry.name}</Text>
+                      <Text className="text-sm text-gray-600">{entry.handle}</Text>
+                    </View>
+                  </View>
+
+                  {/* Points */}
+                  <Text className="text-base text-gray-600 font-medium">{entry.points}</Text>
                 </View>
-
-                {/* Points */}
-                <Text className="text-base text-gray-600 font-medium">{entry.points}</Text>
-              </View>
-            ))}
+              ))}
+            </View>
           </View>
-        </View>
-      </ScrollView>
-
+        </ScrollView>
+      </Pressable>
     </LinearGradient>
   );
 }
