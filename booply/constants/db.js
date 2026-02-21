@@ -36,7 +36,7 @@ export async function listMyGroups() {
 
   const { data, error } = await supabase
     .from("group_members")
-    .select("group_id, groups ( id, name, created_at, created_by )")
+    .select("group_id, groups ( id, name, startTime, created_at, created_by )")
     .eq("user_id", me.id)
     .order("updated_at", { ascending: false });
 
