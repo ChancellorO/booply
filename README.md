@@ -8,13 +8,13 @@ Managing time is hard. Whether you’re heading out alone or meeting friends, pe
 * Smart Alarm Scheduling: Sync with Google Calendar to automatically create smart alarms for when to leave.
 * Solo & Group Plans: Use Booply for personal plans or group hangs
 * Progress Pings: Real-time updates to groups
-* Leave Verification: Door photo + automatic location check
+* Leave Verification: Automatic location check
 * Leaderboard & Ranks: Light gamification around punctuality
 * Profile & Stats: Track on-time rate and trends over time
 
 ## How It Works
 * Calendar events are imported and converted into leave-time predictions
 * Alarm rings when it is time to leave for an event
-* Verification check (photo + location)
+* Verification check using location
 * Realtime update
 * Stats updates profiles and leaderboard
