@@ -21,7 +21,7 @@ export default function TabsLayout() {
         },
       }}
     >
-      {/* Hangs */}
+      {/* Use EXACT route names from console */}
       <Tabs.Screen
         name="hangs"
         options={{
@@ -32,9 +32,8 @@ export default function TabsLayout() {
         }}
       />
 
-      {/* Friends */}
       <Tabs.Screen
-        name="friends"
+        name="friends/index"
         options={{
           title: "Friends",
           tabBarIcon: ({ color, size, focused }) => (
@@ -43,24 +42,18 @@ export default function TabsLayout() {
         }}
       />
 
-      {/* Alerts */}
       <Tabs.Screen
-        name="alerts"
+        name="alerts/index"
         options={{
           title: "Alerts",
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name={focused ? "notifications" : "notifications-outline"}
-              size={size ?? 24}
-              color={color}
-            />
+            <Ionicons name={focused ? "notifications" : "notifications-outline"} size={size ?? 24} color={color} />
           ),
         }}
       />
 
-      {/* Profile */}
       <Tabs.Screen
-        name="profile"
+        name="profile/index"
         options={{
           title: "Profile",
           tabBarIcon: ({ color, size, focused }) => (
@@ -69,11 +62,10 @@ export default function TabsLayout() {
         }}
       />
 
-      {/* Hide nested routes from showing as tabs */}
-      <Tabs.Screen name="hangs/[id]" options={{ href: null }} />
-      <Tabs.Screen name="hangs/create/place" options={{ href: null }} />
-      <Tabs.Screen name="hangs/create/time" options={{ href: null }} />
-      <Tabs.Screen name="hangs/create/invite" options={{ href: null }} />
+      {/* Hide groups (it is currently being discovered under tabs) */}
+      <Tabs.Screen name="groups/index" options={{ href: null }} />
+      <Tabs.Screen name="groups/[group]" options={{ href: null }} />
+      <Tabs.Screen name="groups/invites" options={{ href: null }} />
     </Tabs>
   );
 }
