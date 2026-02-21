@@ -1,58 +1,79 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
+import { Tabs } from "expo-router";
+import { Platform } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
+export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
+        tabBarShowLabel: true,
+        tabBarLabelStyle: {
+          fontSize: 11,
+          marginTop: -2,
+          paddingBottom: Platform.OS === "ios" ? 0 : 4,
+        },
+        tabBarStyle: {
+          height: Platform.OS === "ios" ? 84 : 64,
+          paddingTop: 10,
+          borderTopWidth: 0,
+          elevation: 0,
+        },
+      }}
+    >
+      {/* Hangs */}
       <Tabs.Screen
-        name="leaderboard"
+        name="hangs"
         options={{
-          title: 'Leaderboard',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="groups/index"
-        options={{
-          title: 'Groups',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
-       <Tabs.Screen
-        name="friends"
-        options={{
-          title: 'Friends',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
+          title: "Hangs",
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? "calendar" : "calendar-outline"} size={size ?? 24} color={color} />
+          ),
         }}
       />
 
-       <Tabs.Screen
-        name="groups/[group]"
-        options={{ href: null }}
-      />
+      {/* Friends */}
       <Tabs.Screen
-        name="groups/invites"
-        options={{ href: null }}
+        name="friends"
+        options={{
+          title: "Friends",
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? "people" : "people-outline"} size={size ?? 24} color={color} />
+          ),
+        }}
       />
+
+      {/* Alerts */}
+      <Tabs.Screen
+        name="alerts"
+        options={{
+          title: "Alerts",
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? "notifications" : "notifications-outline"}
+              size={size ?? 24}
+              color={color}
+            />
+          ),
+        }}
+      />
+
+      {/* Profile */}
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? "person" : "person-outline"} size={size ?? 24} color={color} />
+          ),
+        }}
+      />
+
+      {/* Hide nested routes from showing as tabs */}
+      <Tabs.Screen name="hangs/[id]" options={{ href: null }} />
+      <Tabs.Screen name="hangs/create/place" options={{ href: null }} />
+      <Tabs.Screen name="hangs/create/time" options={{ href: null }} />
+      <Tabs.Screen name="hangs/create/invite" options={{ href: null }} />
     </Tabs>
   );
 }

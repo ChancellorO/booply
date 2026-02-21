@@ -18,6 +18,7 @@ export default function GroupScreen() {
   const { groupId } = useLocalSearchParams();
   const [members, setMembers] = useState([]);
   const [meetup, setMeetup] = useState(null);
+  const [origin, setOrigin] = useState(null);
 
   const refresh = async () => {
     try {
@@ -48,6 +49,13 @@ export default function GroupScreen() {
       <Pressable
         className="mt-4 rounded-2xl border border-zinc-200 px-5 py-4"
         onPress={() => router.push({ pathname: "/(app)/pick-meetup", params: { groupId } })}
+      >
+        <Text className="text-center text-base font-semibold text-zinc-900">Pick meetup</Text>
+      </Pressable>
+
+      <Pressable
+        className="mt-4 rounded-2xl border border-zinc-200 px-5 py-4"
+        onPress={() => router.push({ pathname: "/(app)/set-meetup", params: { groupId } })}
       >
         <Text className="text-center text-base font-semibold text-zinc-900">Set meetup</Text>
       </Pressable>

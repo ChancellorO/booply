@@ -119,7 +119,7 @@ export default function Groups() {
               <Pressable
                 key={event.id}
                 className="mt-2 rounded-2xl border border-zinc-200 bg-zinc-50 p-4"
-                onPress={() => router.push({ pathname: "/(app)/group", params: { groupId: event.id } })}
+                onPress={() => router.push(`/(app)/hangs/${event.id}/map`)}
               >
                 <View className="flex-row items-start justify-between gap-3">
                   <Text className="flex-1 text-base font-semibold text-zinc-900">

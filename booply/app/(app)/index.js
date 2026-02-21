@@ -122,7 +122,7 @@ export default function Home() {
       {/* until here is one separate button i misread it */}
       <Pressable
         className="mt-3 rounded-2xl border border-zinc-200 px-5 py-4"
-        onPress={() => router.push("/(app)/leaderboard")}
+        onPress={() => router.push("/(tabs)/hangs/create")}
       >
         <Text className="text-center text-base font-semibold text-zinc-900">Leaderboard</Text>
       </Pressable>

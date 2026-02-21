@@ -2,11 +2,14 @@ import { useLocalSearchParams, router } from "expo-router";
 import { useState } from "react";
 import { Screen, Title, Label, Input, PrimaryButton, ErrorText } from "../../components/ui";
 import { saveMeetup } from "../../constants/db";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { Text, Pressable, Platform } from "react-native";
 
 export default function SetMeetup() {
   const { groupId } = useLocalSearchParams();
   const [name, setName] = useState("Meetup");
-  const [startTime, setStartTime] = useState("");
+  const [startTime, setStartTime] = useState(null); // Date | null
+  const [showPicker, setShowPicker] = useState(false);
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
   const [radius, setRadius] = useState("150");
@@ -25,7 +28,7 @@ export default function SetMeetup() {
         throw new Error("Latitude / Longitude must be valid numbers");
       }
 
-      await saveMeetup(groupId, { name, startTime, lat: latNum, lng: lngNum, radius_m: rNum });
+      await saveMeetup(groupId, { name, start_time: startTime, lat: latNum, lng: lngNum, radius_m: rNum });
       router.back();
     } catch (e) {
       setErr(e.message);
@@ -41,9 +44,36 @@ export default function SetMeetup() {
       <Label>Name</Label>
       <Input value={name} onChangeText={setName} />
 
-      <Label>Start time</Label>
-      <Input value={startTime} onChangeText={setStartTime} placeholder="2024-01-01T12:00:00Z" />
+        <Label>Start time</Label>
 
+        <Pressable
+        onPress={() => setShowPicker(true)}
+        className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-4"
+        >
+        <Text className="text-base text-zinc-900">
+            {startTime
+            ? startTime.toLocaleString([], {
+                month: "short",
+                day: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+                })
+            : "Select start time"}
+        </Text>
+        </Pressable>
+
+        {showPicker && (
+        <DateTimePicker
+            value={startTime ?? new Date()}
+            mode="datetime"
+            display={Platform.OS === "ios" ? "inline" : "default"}
+            onChange={(_, selectedDate) => {
+            setShowPicker(false);
+            if (!selectedDate) return; // user cancelled (Android)
+            setStartTime(selectedDate);
+            }}
+        />
+        )}
       <Label>Latitude</Label>
       <Input value={lat} onChangeText={setLat} placeholder="40.73061" keyboardType="numeric" />
 
