@@ -49,6 +49,7 @@ export default function Home() {
         className="mt-8 rounded-2xl bg-zinc-900 px-5 py-4"
         onPress={async () => {
           await supabase.auth.signOut();
+          router.replace("/(auth)");
         }}
       >
         <Text className="text-center text-base font-semibold text-white">Sign out</Text>
@@ -119,7 +120,7 @@ export default function Home() {
 
       <Pressable
         className="mt-3 rounded-2xl border border-zinc-200 px-5 py-4"
-        onPress={() => router.push("/(onboarding)")}
+        onPress={() => router.push("/(onboarding)/part1")}
       >
         <Text className="text-center text-base font-semibold text-zinc-900">Onboarding</Text>
       </Pressable>
