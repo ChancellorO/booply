@@ -17,6 +17,10 @@ export default function Login() {
       email: email.trim(),
       password,
     });
+    
+    // need to test this next. REMOVE BEFORE PUSHING.
+    const { data, error2 } = await supabase.from("groups").select("*");
+    console.log(data, error2);
 
     setLoading(false);
 

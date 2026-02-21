@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { supabase } from "../../constants/supabase";
 import { Screen, Title } from "../../components/ui";
+import { router } from "expo-router";
 
 export default function Home() {
   const [profile, setProfile] = useState(null);
@@ -51,6 +52,43 @@ export default function Home() {
         }}
       >
         <Text className="text-center text-base font-semibold text-white">Sign out</Text>
+      </Pressable>
+      <Pressable
+        className="mt-4 rounded-2xl bg-zinc-900 px-5 py-4"
+        onPress={async () => {
+          const g = await supabase
+            .from("groups")
+            .insert({ name: "RLS Test" })
+            .select()
+            .single();
+
+          console.log("create group:", g);
+          if (g.error) console.log("group error:", g.error.message);
+
+          if (g.error || !g.data?.id) return;
+
+          const { data: userData } = await supabase.auth.getUser();
+          const user = userData?.user;
+
+          const m = await supabase
+            .from("group_members")
+            .insert({ group_id: g.data.id, user_id: user.id })
+            .select()
+            .single();
+
+          console.log("add member:", m);
+
+          const s = await supabase.from("groups").select("*");
+          console.log("select groups after member:", s);
+        }}
+      >
+        <Text className="text-center text-base font-semibold text-white">Test RLS</Text>
+      </Pressable>
+      <Pressable
+        className="mt-4 rounded-2xl border border-zinc-200 px-5 py-4"
+        onPress={() => router.push("/(app)/groups")}
+      >
+        <Text className="text-center text-base font-semibold text-zinc-900">Groups</Text>
       </Pressable>
     </Screen>
   );
