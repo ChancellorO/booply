@@ -6,6 +6,7 @@ import { saveMeetup } from "../../constants/db";
 export default function SetMeetup() {
   const { groupId } = useLocalSearchParams();
   const [name, setName] = useState("Meetup");
+  const [startTime, setStartTime] = useState("");
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
   const [radius, setRadius] = useState("150");
@@ -24,7 +25,7 @@ export default function SetMeetup() {
         throw new Error("Latitude / Longitude must be valid numbers");
       }
 
-      await saveMeetup(groupId, { name, lat: latNum, lng: lngNum, radius_m: rNum });
+      await saveMeetup(groupId, { name, startTime, lat: latNum, lng: lngNum, radius_m: rNum });
       router.back();
     } catch (e) {
       setErr(e.message);
@@ -39,6 +40,9 @@ export default function SetMeetup() {
 
       <Label>Name</Label>
       <Input value={name} onChangeText={setName} />
+
+      <Label>Start time</Label>
+      <Input value={startTime} onChangeText={setStartTime} placeholder="2024-01-01T12:00:00Z" />
 
       <Label>Latitude</Label>
       <Input value={lat} onChangeText={setLat} placeholder="40.73061" keyboardType="numeric" />
