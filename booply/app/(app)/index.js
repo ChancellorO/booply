@@ -2,28 +2,15 @@ import { useEffect, useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { supabase } from "../../constants/supabase";
 import { Screen, Title } from "../../components/ui";
+import { useRouter } from "expo-router";
+import { useProfile } from "../../context/ProfileContext";
+
 
 export default function Home() {
-  const [profile, setProfile] = useState(null);
-  const [email, setEmail] = useState("");
-
-  useEffect(() => {
-    (async () => {
-      const { data: userData } = await supabase.auth.getUser();
-      const user = userData?.user;
-      setEmail(user?.email ?? "");
-
-      if (!user?.id) return;
-
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("first_name,last_name,description,preferences")
-        .eq("id", user.id)
-        .single();
-
-      if (!error) setProfile(data);
-    })();
-  }, []);
+  const router = useRouter();
+  const { profile, email, loading } = useProfile();
+  console.log("Profile data:", profile, "Email:", email, "Loading:", loading);
+  
 
   return (
     <Screen>
@@ -48,10 +35,22 @@ export default function Home() {
         className="mt-8 rounded-2xl bg-zinc-900 px-5 py-4"
         onPress={async () => {
           await supabase.auth.signOut();
+          router.replace("/(auth)");
         }}
       >
         <Text className="text-center text-base font-semibold text-white">Sign out</Text>
       </Pressable>
+      
+      <Pressable
+        className="mt-4 rounded-2xl bg-zinc-900 px-5 py-4"
+        onPress={() => router.push("/calendar")}
+      >
+        <Text className="text-center text-base font-semibold text-white">
+          Google Calendar API
+        </Text>
+      </Pressable>
+
+
     </Screen>
   );
 }
