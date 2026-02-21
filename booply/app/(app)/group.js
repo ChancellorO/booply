@@ -76,6 +76,12 @@ export default function GroupScreen() {
       <Pressable className="mt-6" onPress={refresh}>
         <Text className="text-center text-sm font-semibold text-zinc-600">Refresh</Text>
       </Pressable>
+      <Pressable
+        className="mt-3 rounded-2xl border border-zinc-200 px-5 py-4"
+        onPress={() => router.push({ pathname: "/(app)/add-members", params: { groupId } })}
+        >
+        <Text className="text-center text-base font-semibold text-zinc-900">Add friends</Text>
+      </Pressable>
     </Screen>
   );
 }
