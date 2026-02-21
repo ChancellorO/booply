@@ -15,13 +15,31 @@ export default function Login() {
     if (loading) return;
     setErr("");
     setLoading(true);
+
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim().toLowerCase(),
         password,
       });
       if (error) throw error;
-      router.replace("/(app)");
+
+      const userId = data?.user?.id;
+      if (!userId) throw new Error("Login succeeded but user id is missing.");
+
+      // Check onboarding status
+      const { data: profile, error: profileErr } = await supabase
+        .from("profiles")
+        .select("onboarding_completed")
+        .eq("id", userId)
+        .single();
+
+      if (profileErr) throw profileErr;
+
+      if (!profile?.onboarding_completed) {
+        router.replace("/(onboarding)/part1");
+      } else {
+        router.replace("/(tabs)/groups"); // or "/(app)" if you're still using (app)
+      }
     } catch (e) {
       setErr(e?.message ?? "Login failed.");
     } finally {
