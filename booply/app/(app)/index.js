@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
-import { View, Text, Pressable } from "react-native";
-import { supabase } from "../../constants/supabase";
-import { Screen, Title } from "../../components/ui";
 import { router } from "expo-router";
+import { useEffect, useState } from "react";
+import { Pressable, Text, View } from "react-native";
+import { Screen, Title } from "../../components/ui";
+import { supabase } from "../../constants/supabase";
 
 export default function Home() {
   const [profile, setProfile] = useState(null);
@@ -108,6 +108,14 @@ export default function Home() {
       >
         <Text className="text-center text-base font-semibold text-zinc-900">Groups</Text>
       </Pressable>
+
+      <Pressable
+        className="mt-3 rounded-2xl border border-zinc-200 px-5 py-4"
+        onPress={() => router.push("/(app)/leaderboard")}
+      >
+        <Text className="text-center text-base font-semibold text-zinc-900">Leaderboard</Text>
+      </Pressable>
+      
     </Screen>
   );
 }
