@@ -1,8 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { useEffect, useRef, useState } from 'react';
-import { Animated, Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { useState } from 'react';
+import { Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 
 // Mock leaderboard data
 const LEADERBOARD_DATA = [
@@ -62,90 +61,23 @@ export default function LeaderboardScreen() {
   const [filter, setFilter] = useState('weekly');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const [mode, setMode] = useState('bloopies'); // 'bloopies' | 'ploopies'
-
-  const anim = useRef(new Animated.Value(mode === 'bloopies' ? 0 : 1)).current;
-
-  useEffect(() => {
-    Animated.timing(anim, {
-      toValue: mode === 'bloopies' ? 0 : 1,
-      duration: 180,
-      useNativeDriver: false, // needed for color interpolation
-    }).start();
-  }, [mode, anim]);
-
-  const trackColor = anim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['#0d9488', '#ef4444'], // teal -> red
-  });
-
-  const knobTranslateX = anim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 22], // knob travel distance
-  });
-
-  const activeChipBg = mode === 'bloopies' ? 'bg-teal-600' : 'bg-red-500';
-  const activeChipText = 'text-white';
-
-  const gradientColors = mode == 'bloopies'
-    ? ['#F7FBF8', '#CBE2D3', '#A1C2A8'] // green
-    : ['#FFF5F5', '#F7B6B6', '#F08A8A']; // red
-
   const filteredData = LEADERBOARD_DATA.filter((entry) =>
     entry.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     entry.handle.toLowerCase().includes(searchQuery.toLowerCase())
-  )
-  .sort((a, b) => {
-    if (mode === 'bloopies') return b.points - a.points; // descending
-    return a.points - b.points; // ascending
-  });
+  ).sort((a, b) => a.rank - b.rank);
 
   return (
     <LinearGradient
-      colors={gradientColors}
+      colors={['#F7FBF8', '#CBE2D3', '#A1C2A8']}
       start={{ x: 0.15, y: 0 }}
       end={{ x: 1, y: 0.85 }}
       style={{ flex: 1, paddingTop: insets.top }}
     >
-
     {/* Header */}
-    <View className="px-4 pt-10 pb-4">
-      <View className="flex-row items-center justify-between">
-        <View>
-          <Text className="text-5xl font-bold text-black tracking-tight">
-            {mode === 'bloopies' ? 'Bloopies' : 'Ploopies'}
-          </Text>
-          <Text className="text-base text-gray-800 mt-2">Leaderboard</Text>
-        </View>
-
-        {/* Wi-Fi style toggle */}
-        <Pressable
-          onPress={() => setMode(mode === 'bloopies' ? 'ploopies' : 'bloopies')}
-          style={{ paddingLeft: 8 }}
-        >
-          <Animated.View
-            style={{
-              width: 52,
-              height: 30,
-              borderRadius: 999,
-              padding: 3,
-              justifyContent: 'center',
-              backgroundColor: trackColor,
-            }}
-          >
-            <Animated.View
-              style={{
-                width: 24,
-                height: 24,
-                borderRadius: 999,
-                backgroundColor: 'white',
-                transform: [{ translateX: knobTranslateX }],
-              }}
-            />
-          </Animated.View>
-        </Pressable>
+      <View className="px-4 pt-10 pb-4">
+        <Text className="text-5xl font-bold text-black tracking-tight">The Bloopies</Text>
+        <Text className="text-base text-gray-800 mt-2">Leaderboard</Text>
       </View>
-    </View>
 
     {/* Filter buttons */}
       <View className="flex-row gap-2 px-4 pb-4">
@@ -154,12 +86,14 @@ export default function LeaderboardScreen() {
             key={period}
             onPress={() => setFilter(period)}
             className={`flex-1 rounded-full py-2 px-5 ${
-              filter === period ? activeChipBg : 'bg-gray-200'
+              filter === period
+                ? 'bg-teal-600'
+                : 'bg-gray-200'
             }`}
           >
             <Text
               className={`text-center font-semibold text-base ${
-                filter === period ? activeChipText : 'text-black'
+                filter === period ? 'text-white' : 'text-black'
               }`}
             >
               {period.charAt(0).toUpperCase() + period.slice(1)}
@@ -184,13 +118,13 @@ export default function LeaderboardScreen() {
       <ScrollView
           className="flex-1"
           style={{ backgroundColor: 'transparent' }}
-          contentContainerStyle={{ paddingBottom: 96 + 72 + insets.bottom }}
+          contentContainerStyle={{ paddingBottom: 96 }}
         >
 
         {/* Leaderboard entries */}
         <View className="px-4 pb-8">
           <View className="gap-2">
-            {filteredData.map((entry, idx) => (
+            {filteredData.map((entry) => (
               <View
                 key={entry.id}
                 className="flex-row items-center justify-between bg-white border border-gray-300 rounded-lg p-3"
@@ -198,7 +132,7 @@ export default function LeaderboardScreen() {
                 {/* Medal emoji and rank */}
                 <View className="flex-row items-center gap-3">
                   <Text className="text-xl">🥉</Text>
-                  <Text className="text-lg font-semibold text-black">{idx + 1}</Text>
+                  <Text className="text-lg font-semibold text-black">{entry.rank}</Text>
                 </View>
 
                 {/* Avatar, name, and handle */}
@@ -220,7 +154,6 @@ export default function LeaderboardScreen() {
           </View>
         </View>
       </ScrollView>
-
     </LinearGradient>
   );
 }
