@@ -24,7 +24,7 @@ const formatStartsIn = (ms) => {
 }
 
 
-const Events = () => {
+const Profile = () => {
   // TBD: uncomment this when we hv the acc calendar API data
   // const { profile, events } = useProfile();
 
@@ -145,4 +145,4 @@ const Events = () => {
   );
 };
 
-export default Events;
+export default Profile;

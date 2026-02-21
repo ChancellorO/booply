@@ -104,9 +104,9 @@ export default function Home() {
       </Pressable>
       <Pressable
         className="mt-3 rounded-2xl border border-zinc-200 px-5 py-4"
-        onPress={() => router.push("/(tabs)/events")}
+        onPress={() => router.push("/(tabs)/groups")}
       >
-        <Text className="text-center text-base font-semibold text-zinc-900">Events</Text>
+        <Text className="text-center text-base font-semibold text-zinc-900">Groups</Text>
       </Pressable>
     </Screen>
   );
