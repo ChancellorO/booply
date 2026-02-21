@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, Text, View, ScrollView, Image, StyleSheet } from "react-native";
+import { Pressable, Text, View, ScrollView, Image, StyleSheet, TextInput, Keyboard } from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -48,6 +48,23 @@ export default function CreateHang() {
   const [groups, setGroups] = useState([]);
   const [memberCounts, setMemberCounts] = useState({}); // { [groupId]: number }
 
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState("");
+
+  const [kbHeight, setKbHeight] = useState(0);
+
+  useEffect(() => {
+    const show = Keyboard.addListener("keyboardWillShow", (e) =>
+      setKbHeight(e.endCoordinates.height)
+    );
+    const hide = Keyboard.addListener("keyboardWillHide", () => setKbHeight(0));
+
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
+
   async function refresh() {
     const { data: userData } = await supabase.auth.getUser();
     const me = userData?.user;
@@ -91,8 +108,25 @@ export default function CreateHang() {
     refresh();
   }, []);
 
-  const upcoming = useMemo(() => groups.filter((g) => !!g.locked), [groups]);
-  const recent = useMemo(() => groups.filter((g) => !g.locked), [groups]);
+  const filteredGroups = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return groups;
+
+    return groups.filter((g) => {
+      const name = (g?.name || "").toLowerCase();
+      return name.includes(q);
+    });
+  }, [groups, query]);
+
+  const upcoming = useMemo(
+    () => filteredGroups.filter((g) => !!g.locked),
+    [filteredGroups]
+  );
+
+  const recent = useMemo(
+    () => filteredGroups.filter((g) => !g.locked),
+    [filteredGroups]
+  );
 
   return (
     <LinearGradient
@@ -104,13 +138,50 @@ export default function CreateHang() {
       {/* Header */}
       <View className="px-4 pt-10 pb-4">
         <View className="flex-row items-center justify-between">
+          {!searchOpen ? (
           <Text className="text-3xl font-bold text-gray-900">Create Hang</Text>
+          ) : (
+            <View
+              className="flex-1 mr-3 bg-white border border-gray-300 rounded-full px-4 shadow-sm"
+              style={{ height: 48, justifyContent: "center" }}
+            >
+              <TextInput
+                value={query}
+                onChangeText={setQuery}
+                placeholder="Search hangs..."
+                placeholderTextColor="#6b7280"
+                autoFocus
+                returnKeyType="search"
+                style={{ fontSize: 16, paddingVertical: 0, color: "#111827" }}
+              />
+            </View>
+          )}
           <View className="flex-row gap-3">
-            <Pressable className="bg-white border border-gray-300 rounded-full w-12 h-12 items-center justify-center shadow-sm">
+            {/*<Pressable className="bg-white border border-gray-300 rounded-full w-12 h-12 items-center justify-center shadow-sm">
               <MaterialIcons name="search" size={24} color="#374151" />
-            </Pressable>
-            <Pressable className="bg-white border border-gray-300 rounded-full w-12 h-12 items-center justify-center shadow-sm">
-              <MaterialIcons name="map" size={24} color="#374151" />
+            </Pressable>*/}
+
+            <Pressable
+              onPress={() => {
+                if (!searchOpen) {
+                  setSearchOpen(true);
+                  return;
+                }
+
+                // search is open:
+                if (query.length > 0) {
+                  setQuery(""); // clear text first
+                } else {
+                  setSearchOpen(false); // then close when empty
+                }
+              }}
+              className="bg-white border border-gray-300 rounded-full w-12 h-12 items-center justify-center shadow-sm"
+            >
+              <MaterialIcons
+                name={!searchOpen ? "search" : "close"}
+                size={24}
+                color="#374151"
+              />
             </Pressable>
           </View>
         </View>
@@ -120,9 +191,13 @@ export default function CreateHang() {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
         className="flex-1"
         style={{ backgroundColor: "transparent" }}
-        contentContainerStyle={{ paddingBottom: 160 + insets.bottom }}
+        contentContainerStyle={{
+          paddingBottom: 160 + insets.bottom + kbHeight,
+        }}
       >
         {/* Upcoming Section */}
         <View className="px-4 mt-6">
