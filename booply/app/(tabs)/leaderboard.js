@@ -1,98 +1,159 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useState } from 'react';
+import { Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+// Mock leaderboard data
+const LEADERBOARD_DATA = [
+  {
+    rank: 4,
+    id: '1',
+    name: 'Stephen',
+    handle: 'stephen965107',
+    points: 4570,
+    avatar: 'https://i.pravatar.cc/150?img=1',
+  },
+  {
+    rank: 5,
+    id: '2',
+    name: 'Tony',
+    handle: 'tony67510745',
+    points: 4570,
+    avatar: 'https://i.pravatar.cc/150?img=2',
+  },
+  {
+    rank: 6,
+    id: '3',
+    name: 'Steve',
+    handle: 'steve09898921',
+    points: 4570,
+    avatar: 'https://i.pravatar.cc/150?img=3',
+  },
+  {
+    rank: 7,
+    id: '4',
+    name: 'Bruice',
+    handle: 'bruice1119725',
+    points: 4570,
+    avatar: 'https://i.pravatar.cc/150?img=4',
+  },
+  {
+    rank: 8,
+    id: '5',
+    name: 'Stephen',
+    handle: 'stephen965107',
+    points: 4570,
+    avatar: 'https://i.pravatar.cc/150?img=5',
+  },
+  {
+    rank: 4,
+    id: '6',
+    name: 'Stephen',
+    handle: 'stephen965107',
+    points: 4570,
+    avatar: 'https://i.pravatar.cc/150?img=6',
+  },
+];
 
-export default function Leaderboard() {
+export default function LeaderboardScreen() {
+  const insets = useSafeAreaInsets();
+
+  const [filter, setFilter] = useState('weekly');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredData = LEADERBOARD_DATA.filter((entry) =>
+    entry.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    entry.handle.toLowerCase().includes(searchQuery.toLowerCase())
+  ).sort((a, b) => a.rank - b.rank);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <LinearGradient
+      colors={['#F7FBF8', '#CBE2D3', '#A1C2A8']}
+      start={{ x: 0.15, y: 0 }}
+      end={{ x: 1, y: 0.85 }}
+      style={{ flex: 1, paddingTop: insets.top }}
+    >
+    {/* Header */}
+      <View className="px-4 pt-10 pb-4">
+        <Text className="text-5xl font-bold text-black tracking-tight">The Bloopies</Text>
+        <Text className="text-base text-gray-800 mt-2">Leaderboard</Text>
+      </View>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    {/* Filter buttons */}
+      <View className="flex-row gap-2 px-4 pb-4">
+        {['weekly', 'daily', 'monthly'].map((period) => (
+          <Pressable
+            key={period}
+            onPress={() => setFilter(period)}
+            className={`flex-1 rounded-full py-2 px-5 ${
+              filter === period
+                ? 'bg-teal-600'
+                : 'bg-gray-200'
+            }`}
+          >
+            <Text
+              className={`text-center font-semibold text-base ${
+                filter === period ? 'text-white' : 'text-black'
+              }`}
+            >
+              {period.charAt(0).toUpperCase() + period.slice(1)}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+    {/* Search bar */}
+            <View className="px-4 pb-4">
+              <View className="flex-row items-center bg-white border border-gray-300 rounded-full px-4 py-3">
+                <Text className="text-2xl text-gray-400 mr-2">🔍</Text>
+                <TextInput
+                  placeholder="Search"
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  className="flex-1 text-base text-black"
+                  placeholderTextColor="#9f8f8f"
+                />
+              </View>
+            </View>
+
+      <ScrollView
+          className="flex-1"
+          style={{ backgroundColor: 'transparent' }}
+          contentContainerStyle={{ paddingBottom: 96 }}
+        >
+
+        {/* Leaderboard entries */}
+        <View className="px-4 pb-8">
+          <View className="gap-2">
+            {filteredData.map((entry) => (
+              <View
+                key={entry.id}
+                className="flex-row items-center justify-between bg-white border border-gray-300 rounded-lg p-3"
+              >
+                {/* Medal emoji and rank */}
+                <View className="flex-row items-center gap-3">
+                  <Text className="text-xl">🥉</Text>
+                  <Text className="text-lg font-semibold text-black">{entry.rank}</Text>
+                </View>
+
+                {/* Avatar, name, and handle */}
+                <View className="flex-1 flex-row items-center gap-3 ml-2">
+                  <Image
+                    source={{ uri: entry.avatar }}
+                    className="w-14 h-14 rounded-full"
+                  />
+                  <View className="flex-1">
+                    <Text className="text-base font-semibold text-black">{entry.name}</Text>
+                    <Text className="text-sm text-gray-600">{entry.handle}</Text>
+                  </View>
+                </View>
+
+                {/* Points */}
+                <Text className="text-base text-gray-600 font-medium">{entry.points}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      </ScrollView>
+    </LinearGradient>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});

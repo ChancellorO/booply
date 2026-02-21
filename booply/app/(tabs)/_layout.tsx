@@ -44,6 +44,15 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
         }}
       />
+
+       <Tabs.Screen
+        name="groups/[group]"
+        options={{ href: null }}
+      />
+      <Tabs.Screen
+        name="groups/invites"
+        options={{ href: null }}
+      />
     </Tabs>
   );
 }
