@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Image, Keyboard, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Animated, Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
@@ -45,14 +45,6 @@ const LEADERBOARD_DATA = [
     handle: 'stephen965107',
     points: 4570,
     avatar: 'https://i.pravatar.cc/150?img=5',
-  },
-  {
-    rank: 4,
-    id: '6',
-    name: 'Stephen',
-    handle: 'stephen965107',
-    points: 4570,
-    avatar: 'https://i.pravatar.cc/150?img=6',
   },
 ];
 
@@ -108,7 +100,7 @@ export default function LeaderboardScreen() {
 
   const activeHex = mode === 'bloopies' ? '#0d9488' : '#ef4444';
 
-  const gradientColors = mode == 'bloopies'
+  const gradientColors = mode === 'bloopies'
     ? ['#F7FBF8', '#CBE2D3', '#A1C2A8'] // green
     : ['#FFF5F5', '#F7B6B6', '#F08A8A']; // red
 
@@ -128,7 +120,6 @@ export default function LeaderboardScreen() {
       end={{ x: 1, y: 0.85 }}
       style={{ flex: 1, paddingTop: insets.top }}
     >
-      <Pressable style={{ flex: 1 }} onPress={Keyboard.dismiss}>
 
     {/* Header */}
     <View className="px-4 pt-10 pb-4">
@@ -225,59 +216,60 @@ export default function LeaderboardScreen() {
     </View>
 
     {/* Search bar */}
-            <View className="px-4 pb-4">
-              <View className="flex-row items-center bg-white border border-gray-300 rounded-full px-4 py-3">
-                <Text className="text-2xl text-gray-400 mr-2">🔍</Text>
-                <TextInput
-                  placeholder="Search"
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  className="flex-1 text-base text-black"
-                  placeholderTextColor="#9f8f8f"
-                />
-              </View>
-            </View>
+    <View className="px-4 pb-4">
+      <View className="flex-row items-center bg-white border border-gray-300 rounded-full px-4 py-3">
+        <Text className="text-2xl text-gray-400 mr-2">🔍</Text>
+        <TextInput
+          placeholder="Search"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          className="flex-1 text-base text-black"
+          placeholderTextColor="#9f8f8f"
+        />
+      </View>
+    </View>
 
-        <ScrollView
-            className="flex-1"
-            style={{ backgroundColor: 'transparent' }}
-            contentContainerStyle={{ paddingBottom: 96 + 72 + insets.bottom }}
-          >
+      <ScrollView
+          className="flex-1"
+          style={{ backgroundColor: 'transparent' }}
+          contentContainerStyle={{ paddingBottom: 96 + 72 + insets.bottom }}
+          keyboardDismissMode="on-drag"
+          keyboardShouldPersistTaps="handled"
+        >
 
-          {/* Leaderboard entries */}
-          <View className="px-4 pb-8">
-            <View className="gap-2">
-              {filteredData.map((entry, idx) => (
-                <View
-                  key={entry.id}
-                  className="flex-row items-center justify-between bg-white border border-gray-300 rounded-lg p-3"
-                >
-                  {/* Medal emoji and rank */}
-                  <View className="flex-row items-center gap-3">
-                    <Text className="text-xl">🥉</Text>
-                    <Text className="text-lg font-semibold text-black">{idx + 1}</Text>
-                  </View>
-
-                  {/* Avatar, name, and handle */}
-                  <View className="flex-1 flex-row items-center gap-3 ml-2">
-                    <Image
-                      source={{ uri: entry.avatar }}
-                      className="w-14 h-14 rounded-full"
-                    />
-                    <View className="flex-1">
-                      <Text className="text-base font-semibold text-black">{entry.name}</Text>
-                      <Text className="text-sm text-gray-600">{entry.handle}</Text>
-                    </View>
-                  </View>
-
-                  {/* Points */}
-                  <Text className="text-base text-gray-600 font-medium">{entry.points}</Text>
+        {/* Leaderboard entries */}
+        <View className="px-4 pb-8">
+          <View className="gap-2">
+            {filteredData.map((entry, idx) => (
+              <View
+                key={entry.id}
+                className="flex-row items-center justify-between bg-white border border-gray-300 rounded-lg p-3"
+              >
+                {/* Medal emoji and rank */}
+                <View className="flex-row items-center gap-3">
+                  <Text className="text-xl">🥉</Text>
+                  <Text className="text-lg font-semibold text-black">{idx + 1}</Text>
                 </View>
-              ))}
-            </View>
+
+                {/* Avatar, name, and handle */}
+                <View className="flex-1 flex-row items-center gap-3 ml-2">
+                  <Image
+                    source={{ uri: entry.avatar }}
+                    className="w-14 h-14 rounded-full"
+                  />
+                  <View className="flex-1">
+                    <Text className="text-base font-semibold text-black">{entry.name}</Text>
+                    <Text className="text-sm text-gray-600">{entry.handle}</Text>
+                  </View>
+                </View>
+
+                {/* Points */}
+                <Text className="text-base text-gray-600 font-medium">{entry.points}</Text>
+              </View>
+            ))}
           </View>
-        </ScrollView>
-      </Pressable>
+        </View>
+      </ScrollView>
     </LinearGradient>
   );
 }
