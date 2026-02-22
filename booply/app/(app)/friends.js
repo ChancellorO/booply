@@ -9,6 +9,7 @@ import {
   listMyFriends,
   getMe,
 } from "../../constants/db";
+import { supabase } from "../../constants/supabase";
 
 export default function Friends() {
   const [email, setEmail] = useState("");
@@ -33,19 +34,36 @@ export default function Friends() {
   }, []);
 
   const onAdd = async () => {
-    setErr(""); setInfo("");
-    try {
-    const me = await getMe();
-    const user = await findUserByEmail(email);
+    setErr("");
+    setInfo("");
 
-    if (!user) throw new Error("No user found with that email.");
-    if (user.id === me.id) throw new Error("You can’t add yourself.");
+    try {
+      const me = await getMe();
+      const user = await findUserByEmail(email);
+
+      if (!user) throw new Error("No user found with that email.");
+      if (user.id === me.id) throw new Error("You can’t add yourself.");
+
       await sendFriendRequest(user.id);
+
+      const { data, error } = await supabase.functions.invoke("send_push_invite", {
+        body: {
+          to_user_id: user.id,
+          title: "New Friend Request",
+          body: `${me.first_name} sent you a friend request 👋`
+        }
+      });
+
+      if (error) {
+        console.log("Push invite error:", error);
+      }
+
       setInfo("Friend request sent ✅");
       setEmail("");
       await refresh();
+
     } catch (e) {
-      setErr(e.message);
+      setErr(e?.message ?? "Failed to send request.");
     }
   };
 

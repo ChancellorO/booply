@@ -54,8 +54,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "bcd7a7a2-046a-4aed-8ca2-c7bfd5f6cd6e"
+        "projectId": "4c665f02-ce88-4398-9ad7-224e09f944fa"
       }
-    }
+    },
+    "owner": "venetialiu"
   }
 }

@@ -3,6 +3,7 @@ import { View, Text, Pressable, TextInput } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../../constants/supabase";
+import { registerForPushAndSaveToken } from "../../constants/notifications";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -25,6 +26,9 @@ export default function Login() {
 
       const userId = data?.user?.id;
       if (!userId) throw new Error("Login succeeded but user id is missing.");
+
+      // Register for push notifications and save the token to the DB
+      await registerForPushAndSaveToken().catch((e) => console.log("push reg error", e));
 
       // Check onboarding status
       const { data: profile, error: profileErr } = await supabase
