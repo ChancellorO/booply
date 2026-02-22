@@ -69,14 +69,24 @@ export default function Friends() {
     >
       {/* Header */}
       <View className="px-4 pt-10 pb-4">
-        <View className="flex-row items-center justify-between"></View>
-        <Text className="text-3xl font-bold text-gray-900">Friends</Text>
-        <Pressable
-          onPress={() => router.push("/(tabs)/friends/leaderboard")}
-          className="bg-white/80 border border-gray-200 rounded-full px-4 py-2"
-        >
-          <Text className="text-sm font-semibold text-gray-800">Leaderboard</Text>
-        </Pressable>
+        <View className="flex-row items-center justify-between">
+          <Text className="text-3xl font-bold text-gray-900">Friends</Text>
+
+          <Pressable
+            onPress={() => router.push("/(tabs)/friends/leaderboard")}
+            className="flex-row items-center gap-2 bg-white/70 border border-white/60 rounded-full px-4 py-2"
+            style={{
+              shadowColor: "#000",
+              shadowOpacity: 0.08,
+              shadowRadius: 10,
+              shadowOffset: { width: 0, height: 6 },
+              elevation: 2,
+            }}
+          >
+            <MaterialIcons name="emoji-events" size={18} color="#0f766e" />
+            <Text className="text-sm font-semibold text-gray-800">Leaderboard</Text>
+          </Pressable>
+        </View>
       </View>
 
       <ScrollView

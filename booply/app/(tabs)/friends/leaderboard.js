@@ -2,6 +2,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { router } from "expo-router";
 
 
 // Mock leaderboard data
@@ -124,40 +126,58 @@ export default function LeaderboardScreen() {
     {/* Header */}
     <View className="px-4 pt-10 pb-4">
       <View className="flex-row items-center justify-between">
-        <View>
-          <Text className="text-5xl font-bold text-black tracking-tight">
-            {mode === 'bloopies' ? 'Bloopies' : 'Ploopies'}
-          </Text>
-          <Text className="text-base text-gray-800 mt-2">Leaderboard</Text>
+        {/* Left: Back + Title */}
+        <View className="flex-row items-start gap-3 flex-1">
+            <Pressable
+            onPress={() => router.back()}
+            className="w-10 h-10 rounded-full bg-white/70 border border-white/60 items-center justify-center"
+            style={{
+                shadowColor: "#000",
+                shadowOpacity: 0.08,
+                shadowRadius: 10,
+                shadowOffset: { width: 0, height: 6 },
+                elevation: 2,
+            }}
+            hitSlop={10}
+            >
+            <MaterialIcons name="chevron-left" size={22} color="#0f172a" />
+            </Pressable>
+
+            <View>
+            <Text className="text-5xl font-bold text-black tracking-tight">
+                {mode === "bloopies" ? "Bloopies" : "Ploopies"}
+            </Text>
+            <Text className="text-base text-gray-800 mt-2">Leaderboard</Text>
+            </View>
         </View>
 
-        {/* Wi-Fi style toggle */}
+        {/* Right: Wi-Fi style toggle */}
         <Pressable
-          onPress={() => setMode(mode === 'bloopies' ? 'ploopies' : 'bloopies')}
-          style={{ paddingLeft: 8 }}
+            onPress={() => setMode(mode === "bloopies" ? "ploopies" : "bloopies")}
+            style={{ paddingLeft: 8 }}
         >
-          <Animated.View
-            style={{
-              width: 52,
-              height: 30,
-              borderRadius: 999,
-              padding: 3,
-              justifyContent: 'center',
-              backgroundColor: trackColor,
-            }}
-          >
             <Animated.View
-              style={{
+            style={{
+                width: 52,
+                height: 30,
+                borderRadius: 999,
+                padding: 3,
+                justifyContent: "center",
+                backgroundColor: trackColor,
+            }}
+            >
+            <Animated.View
+                style={{
                 width: 24,
                 height: 24,
                 borderRadius: 999,
-                backgroundColor: 'white',
+                backgroundColor: "white",
                 transform: [{ translateX: knobTranslateX }],
-              }}
+                }}
             />
-          </Animated.View>
+            </Animated.View>
         </Pressable>
-      </View>
+     </View>
     </View>
 
     {/* Segmented Period Control (animated) */}
