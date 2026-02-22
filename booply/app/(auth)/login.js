@@ -39,7 +39,7 @@ export default function Login() {
       if (!profile?.onboarding_completed) {
         router.replace("/(onboarding)/part1");
       } else {
-        router.replace("/(tabs)/groups"); // or "/(app)" if you're still using (app)
+        router.replace("/(tabs)/hangs"); // or "/(app)" if you're still using (app)
       }
     } catch (e) {
       setErr(e?.message ?? "Login failed.");

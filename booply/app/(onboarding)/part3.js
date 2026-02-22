@@ -95,7 +95,7 @@ export default function Part3() {
 
       if (error) throw error;
 
-      router.replace("/(tabs)/groups"); // change to /hangs if needed
+      router.replace("/(tabs)/hangs"); // change to /hangs if needed
     } catch (e) {
       console.log("save avatar error:", e?.message ?? e);
     } finally {

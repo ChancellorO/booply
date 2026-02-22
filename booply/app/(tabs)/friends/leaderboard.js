@@ -26,7 +26,7 @@ export default function LeaderboardScreen() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [mode, setMode] = useState("bloopies"); // 'bloopies' | 'ploopies'
-  const isAscending = mode === "bloopies";
+  const isAscending = mode !== "bloopies";
 
   const anim = useRef(new Animated.Value(mode === "bloopies" ? 0 : 1)).current;
 
@@ -39,8 +39,8 @@ export default function LeaderboardScreen() {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, first_name, last_name, email, avatar_url, punctuality_score")
-        .order("punctuality_score", { ascending: isAscending })
+        .select("id, first_name, last_name, email, avatar_url, punctuality_streak")
+        .order("punctuality_streak", { ascending: isAscending })
         .limit(100);
 
       if (cancelled) return;
@@ -56,7 +56,7 @@ export default function LeaderboardScreen() {
         id: p.id,
         name: `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim() || "Unnamed",
         handle: safeHandleFromProfile(p),
-        points: p.punctuality_score ?? 0,
+        points: p.punctuality_streak ?? 0,
         avatar: p.avatar_url ?? null,
       }));
 

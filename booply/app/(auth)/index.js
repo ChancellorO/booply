@@ -25,12 +25,12 @@ export default function Landing() {
       />
     
 
-      <View className="flex-1 items-center justify-end px-8 pb-20"> {/* h = up down; w = right left*/}
+      <View className="flex-1 items-center justify-end px-8 pb-20">
         <Image source={require("../../assets/images/madBoopers.png")} className="h-56 w-66" resizeMode="contain" />
         <View className="h-50 w-50 rounded-[40px] bg-white/40" />
 
         <Text className="mt-10 text-6xl font-extrabold tracking-tight text-black">booply</Text>
-        <Text className="mt-3 text-lg text-black/80">None of us will be late.</Text>
+        <Text className="mt-3 text-lg text-black/80">Don't be boopin late!</Text>
 
         <Pressable
           onPress={() => router.push("/(auth)/login")} // change to login/signup route you want
