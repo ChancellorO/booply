@@ -17,6 +17,7 @@ export default function Alerts() {
   const [groupInvites, setGroupInvites] = useState([]);
   const [friendInvites, setFriendInvites] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedTab, setSelectedTab] = useState("groups");
 
 
   async function refresh() {
@@ -110,71 +111,124 @@ export default function Alerts() {
           <Text className="text-3xl font-extrabold text-slate-900">Alerts</Text>
           <Text className="mt-2 text-sm text-slate-600">Invites & updates.</Text>
 
+          {/* TOGGLE */}
+        <View className="mt-6 flex-row rounded-2xl bg-zinc-200 p-1">
+          <Pressable
+            onPress={() => setSelectedTab("groups")}
+            className={`flex-1 items-center justify-center rounded-2xl py-3 ${
+              selectedTab === "groups" ? "bg-white" : ""
+            }`}
+          >
+            <Text
+              className={`text-sm font-semibold ${
+                selectedTab === "groups" ? "text-zinc-900" : "text-zinc-600"
+              }`}
+            >
+              Group Invites
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => setSelectedTab("friends")}
+            className={`flex-1 items-center justify-center rounded-2xl py-3 ${
+              selectedTab === "friends" ? "bg-white" : ""
+            }`}
+          >
+            <Text
+              className={`text-sm font-semibold ${
+                selectedTab === "friends" ? "text-zinc-900" : "text-zinc-600"
+              }`}
+            >
+              Friend Requests
+            </Text>
+          </Pressable>
+        </View>
+
+        {/* toggle switch between two tabs*/} 
+
           {/* GROUP INVITES */}
-          <Text className="mt-8 text-lg font-semibold text-slate-900">Group invites</Text>
-          {groupInvites.length === 0 ? (
-            <Text className="mt-3 text-sm text-slate-600">No pending group invites.</Text>
-          ) : (
-            groupInvites.map((inv) => (
-              <View key={inv.id} className="mt-4 bg-white/70">
-                <Text className="text-lg font-semibold text-slate-900">
-                  Group
-                </Text>
-                <Text className="mt-1 text-sm text-slate-600">
-                  You were invited to join a group.
-                </Text>
+              {selectedTab === "groups" && (
+      <>
+        <Text className="mt-8 text-lg font-semibold text-slate-900">
+          Group invites
+        </Text>
 
-                <View className="mt-4 flex-row gap-3">
-                  <Pressable
-                    onPress={() => onAcceptGroup(inv)}
-                    className="flex-1 items-center justify-center rounded-2xl bg-zinc-900 py-3"
-                  >
-                    <Text className="text-sm font-semibold text-white">Accept</Text>
-                  </Pressable>
+        {groupInvites.length === 0 ? (
+          <Text className="mt-3 text-sm text-slate-600">
+            No pending group invites.
+          </Text>
+        ) : (
+          groupInvites.map((inv) => (
+            <View key={inv.id} className="mt-4 bg-white/70">
+              <Text className="text-lg font-semibold text-slate-900">
+                Group
+              </Text>
+              <Text className="mt-1 text-sm text-slate-600">
+                You were invited to join a group.
+              </Text>
 
-                  <Pressable
-                    onPress={() => onDeclineGroup(inv)}
-                    className="flex-1 items-center justify-center rounded-2xl bg-zinc-200 py-3"
-                  >
-                    <Text className="text-sm font-semibold text-zinc-900">Decline</Text>
-                  </Pressable>
-                </View>
+              <View className="mt-4 flex-row gap-3">
+                <Pressable
+                  onPress={() => onAcceptGroup(inv)}
+                  className="flex-1 items-center justify-center rounded-2xl bg-zinc-900 py-3"
+                >
+                  <Text className="text-sm font-semibold text-white">Accept</Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={() => onDeclineGroup(inv)}
+                  className="flex-1 items-center justify-center rounded-2xl bg-zinc-200 py-3"
+                >
+                  <Text className="text-sm font-semibold text-zinc-900">Decline</Text>
+                </Pressable>
               </View>
-            ))
-          )}
+            </View>
+          ))
+        )}
+      </>
+    )}
 
           {/* FRIEND REQUESTS */}
-          <Text className="mt-10 text-lg font-semibold text-slate-900">Friend requests</Text>
-          {friendInvites.length === 0 ? (
-            <Text className="mt-3 text-sm text-slate-600">No pending friend requests.</Text>
-          ) : (
-            friendInvites.map((i) => (
-              <View key={i.id} className="mt-4 bg-white/70">
-                <Text className="text-lg font-semibold text-slate-900">
-                  Friend request
-                </Text>
-                <Text className="mt-1 text-sm text-slate-600">
-                  Someone wants to connect.
-                </Text>
+                  {selectedTab === "friends" && (
+          <>
+            <Text className="mt-8 text-lg font-semibold text-slate-900">
+              Friend requests
+            </Text>
 
-                <View className="mt-4 flex-row gap-3">
-                  <Pressable
-                    onPress={() => onAcceptFriend(i)}
-                    className="flex-1 items-center justify-center rounded-2xl bg-zinc-900 py-3"
-                  >
-                    <Text className="text-sm font-semibold text-white">Accept</Text>
-                  </Pressable>
+            {friendInvites.length === 0 ? (
+              <Text className="mt-3 text-sm text-slate-600">
+                No pending friend requests.
+              </Text>
+            ) : (
+              friendInvites.map((i) => (
+                <View key={i.id} className="mt-4 bg-white/70">
+                  <Text className="text-lg font-semibold text-slate-900">
+                    Friend request
+                  </Text>
+                  <Text className="mt-1 text-sm text-slate-600">
+                    Someone wants to connect.
+                  </Text>
 
-                  <Pressable
-                    onPress={() => onRejectFriend(i)}
-                    className="flex-1 items-center justify-center rounded-2xl bg-zinc-200 py-3"
-                  >
-                    <Text className="text-sm font-semibold text-zinc-900">Reject</Text>
-                  </Pressable>
+                  <View className="mt-4 flex-row gap-3">
+                    <Pressable
+                      onPress={() => onAcceptFriend(i)}
+                      className="flex-1 items-center justify-center rounded-2xl bg-zinc-900 py-3"
+                    >
+                      <Text className="text-sm font-semibold text-white">Accept</Text>
+                    </Pressable>
+
+                    <Pressable
+                      onPress={() => onRejectFriend(i)}
+                      className="flex-1 items-center justify-center rounded-2xl bg-zinc-200 py-3"
+                    >
+                      <Text className="text-sm font-semibold text-zinc-900">Reject</Text>
+                    </Pressable>
+                  </View>
                 </View>
-              </View>
-            ))
-          )}
+              ))
+            )}
+          </>
+        )}
 
           <Pressable
             onPress={refresh}

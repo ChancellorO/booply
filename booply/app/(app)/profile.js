@@ -6,7 +6,7 @@ import {  View,Text, Image, Pressable, ScrollView, StyleSheet, StatusBar,} from 
   const GREEN = "#16a34a";
   const BLUE = "#3b82f6";
   const MUTED = "rgba(0,0,0,0.45)";
-  const GLASS = "rgba(255,255,255,0.45)";
+  const GLASS = "rgba(255, 255, 255, 0.78)";
   const GLASS_BORDER = "rgba(255,255,255,0.6)";
   
   export default function Profile() {
