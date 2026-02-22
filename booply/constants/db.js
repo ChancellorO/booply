@@ -96,7 +96,7 @@ export async function listGroupMembers(groupId) {
   const { data, error } = await supabase
     .from("group_members")
     .select(
-      "user_id, ready_state, updated_at, last_lat, last_lng, profiles ( first_name, last_name, email )"
+      "user_id, ready_state, updated_at, last_lat, last_lng, profiles ( first_name, last_name, avatar_url )"
     )
     .eq("group_id", groupId)
     .order("updated_at", { ascending: false });
@@ -106,13 +106,26 @@ export async function listGroupMembers(groupId) {
 }
 
 // Update my ready state
-export async function setMyReadyState(groupId, ready_state) {
+export async function setMyReadyState(groupId, readyState) {
   const me = await getMe();
   const { error } = await supabase
     .from("group_members")
-    .update({ ready_state, updated_at: new Date().toISOString() })
+    .update({ ready_state: readyState, updated_at: new Date().toISOString() })
     .eq("group_id", groupId)
     .eq("user_id", me.id);
+
+  if (error) throw error;
+}
+
+export async function sendNudge(groupId, toUserId) {
+  const me = await getMe();
+
+  const { error } = await supabase.from("messages").insert({
+    group_id: groupId,
+    user_id: me.id,
+    // hackathon-friendly payload
+    text: `NUDGE:${toUserId}`,
+  });
 
   if (error) throw error;
 }
@@ -461,4 +474,34 @@ export async function getUserNameById(userId) {
   if (!data) return "Someone";
 
   return `${data.first_name ?? ""} ${data.last_name ?? ""}`.trim();
+}
+
+import { sendPushNotifications } from "./pushSend";
+
+export async function notifyGroupSimple(groupId, title, body, data = {}) {
+  // 1) get members
+  const { data: members, error: mErr } = await supabase
+    .from("group_members")
+    .select("user_id")
+    .eq("group_id", groupId);
+
+  if (mErr) throw mErr;
+
+  const ids = members.map((m) => m.user_id);
+  if (!ids.length) return;
+
+  // 2) get tokens
+  const { data: profiles, error: pErr } = await supabase
+    .from("profiles")
+    .select("expo_push_token")
+    .in("id", ids);
+
+  if (pErr) throw pErr;
+
+  const tokens = profiles
+    .map((p) => p.expo_push_token)
+    .filter((t) => t?.startsWith("ExponentPushToken"));
+
+  // 3) send push
+  await sendPushNotifications(tokens, title, body, data);
 }

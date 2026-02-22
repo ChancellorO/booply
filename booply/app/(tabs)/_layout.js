@@ -1,8 +1,14 @@
 import { Tabs } from "expo-router";
 import { Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useEffect } from "react";
+import { registerForPushAndSaveToken } from "../../constants/push";
 
 export default function TabsLayout() {
+
+    useEffect(() => {
+    registerForPushAndSaveToken().catch((e) => console.log("push init err", e?.message ?? e));
+    }, []);
   return (
     <Tabs
       screenOptions={{

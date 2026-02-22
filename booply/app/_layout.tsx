@@ -1,7 +1,18 @@
-import "react-native-get-random-values";
+// app/_layout.js (or .tsx)
+import "react-native-gesture-handler";
 import "../global.css";
-import { Stack } from 'expo-router';
+import { Stack } from "expo-router";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { useEffect } from "react";
+import { registerForPushAndSaveToken } from "../constants/push";
 
 export default function RootLayout() {
-  return <Stack screenOptions={{ headerShown: false }} />;
+  useEffect(() => {
+  registerForPushAndSaveToken();
+}, []);
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Stack screenOptions={{ headerShown: false }} />
+    </GestureHandlerRootView>
+  );
 }

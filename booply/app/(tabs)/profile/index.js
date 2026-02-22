@@ -518,7 +518,7 @@ const styles = StyleSheet.create({
 
   logoutBtn: {
     alignSelf: "flex-start",
-    marginLeft: 16, // ✅ padding to the left (fix)
+    marginLeft: 16,
     marginTop: 18,
     paddingVertical: 12,
     paddingHorizontal: 12,
