@@ -17,13 +17,16 @@ export default function Landing() {
         className="absolute -left-24 -top-28 h-96 w-96 rounded-full"
         style={{ backgroundColor: "rgba(120, 210, 255, 0.25)" }}
       />
+      
       <View
         className="absolute -right-28 bottom-0 h-96 w-96 rounded-full"
         style={{ backgroundColor: "rgba(120, 255, 190, 0.18)" }}
       />
-      <View className="flex-1 items-center justify-end px-8 pb-20">
-        <Image source={require("../../assets/images/onboarding.png")} className="h-56 w-56" resizeMode="contain" />
-        <View className="h-56 w-56 rounded-[40px] bg-white/40" />
+    
+
+      <View className="flex-1 items-center justify-end px-8 pb-20"> {/* h = up down; w = right left*/}
+        <Image source={require("../../assets/images/madBoopers.png")} className="h-56 w-66" resizeMode="contain" />
+        <View className="h-50 w-50 rounded-[40px] bg-white/40" />
 
         <Text className="mt-10 text-6xl font-extrabold tracking-tight text-black">booply</Text>
         <Text className="mt-3 text-lg text-black/80">None of us will be late.</Text>

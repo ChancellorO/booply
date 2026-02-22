@@ -1,4 +1,4 @@
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, Image } from "react-native";  
 import { router } from "expo-router";
 import { supabase } from "../../constants/supabase";
 import { useState } from "react";
@@ -18,7 +18,7 @@ export default function Part1() {
       const { data, error } = await supabase
         .from("profiles")
         .update({
-          arrival_habit: habit,   // ✅ only save habit here
+          arrival_habit: habit,
         })
         .eq("id", user.id)
         .select()
@@ -26,9 +26,6 @@ export default function Part1() {
 
       if (error) throw error;
 
-      console.log("Profile after onboarding part1:", data);
-
-      // ✅ pass the habit to Part 2
       router.replace({
         pathname: "/(onboarding)/part2",
         params: { arrival: habit },
@@ -42,7 +39,18 @@ export default function Part1() {
   };
 
   return (
-    <View className="flex-1 items-center justify-center p-6 bg-white">
+    <View className="flex-1 items-center justify-end px-6 pb-24 bg-white">
+
+        <View className="flex-1 items-center justify-end ">
+                  <Image
+                    source={require("../../assets/images/twinboopers.png")}
+                    className="h-64 w-60 absolute top-1/2 self-center"
+                    resizeMode="contain"
+                  />
+                  <View className="h-48 w-48 rounded-[40px] " /> 
+                </View>
+
+
       <Text className="text-xl font-bold text-zinc-900">
         When do you usually arrive?
       </Text>
@@ -81,7 +89,10 @@ export default function Part1() {
             Usually Late
           </Text>
         </Pressable>
+
+       
+
       </View>
-    </View>
+    </View>  // ✅ added missing closing View
   );
 }

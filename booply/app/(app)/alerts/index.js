@@ -159,7 +159,16 @@ export default function Alerts() {
           </Text>
         ) : (
           groupInvites.map((inv) => (
-            <View key={inv.id} className="mt-4 bg-white/70">
+            <View key={i.id}
+            className="mt-4 rounded-3xl border border-zinc-100 bg-white p-5"
+            style={{
+              shadowColor: "#000",
+              shadowOpacity: 0.06,
+              shadowRadius: 10,
+              shadowOffset: { width: 0, height: 4 },
+              elevation: 2,
+            }}
+          >
               <Text className="text-lg font-semibold text-slate-900">
                 Group
               </Text>
@@ -201,7 +210,16 @@ export default function Alerts() {
               </Text>
             ) : (
               friendInvites.map((i) => (
-                <View key={i.id} className="mt-4 bg-white/70">
+                <View key={i.id}
+                className="mt-4 rounded-3xl border border-zinc-100 bg-white p-5"
+                style={{
+                  shadowColor: "#000",
+                  shadowOpacity: 0.06,
+                  shadowRadius: 10,
+                  shadowOffset: { width: 0, height: 4 },
+                  elevation: 2,
+                }}
+              >
                   <Text className="text-lg font-semibold text-slate-900">
                     Friend request
                   </Text>

@@ -1,4 +1,4 @@
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, Image} from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { supabase } from "../../constants/supabase";
 import { useState } from "react";
@@ -63,6 +63,16 @@ export default function Part2() {
 
   return (
     <View className="flex-1 items-center justify-center p-6 bg-white">
+
+        <View className="flex-1 items-center justify-end ">
+                  <Image
+                    source={require("../../assets/images/sadbooper.png")}
+                    className="h-64 w-60 absolute top-1/2 self-center"
+                    resizeMode="contain"
+                  />
+                  <View className="h-48 w-48 rounded-[40px] " /> 
+                </View>
+
       <Text className="text-xl font-bold text-zinc-900">{title}</Text>
 
       <Text className="mt-2 text-sm text-zinc-500 text-center">{subtitle}</Text>
@@ -92,6 +102,7 @@ export default function Part2() {
                 </Text>
               </Pressable>
             ))}
+
           </View>
         )}
       </View>
