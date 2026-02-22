@@ -28,7 +28,7 @@ export default function LeaderboardScreen() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const [mode, setMode] = useState('bloopies'); // 'bloopies' | 'ploopies'
-  const isAscending = mode === 'ploopies';
+  const isAscending = mode === 'bloopies';
 
   const anim = useRef(new Animated.Value(mode === 'bloopies' ? 0 : 1)).current;
 
@@ -123,11 +123,12 @@ export default function LeaderboardScreen() {
     entry.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     entry.handle.toLowerCase().includes(searchQuery.toLowerCase())
   )
-  /* SQL already sorts by points, so we just need to re-sort for ascending/descending toggle. */
+  /* SQL already sorts by points, so we just need to re-sort for ascending/descending toggle. 
   .sort((a, b) => {
     if (mode === 'bloopies') return b.points - a.points; // descending
     return a.points - b.points; // ascending
   });
+  */
 
 
   return (
