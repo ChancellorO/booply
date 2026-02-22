@@ -216,32 +216,64 @@ export default function HangDetailsMap() {
   }, []);
 
   // realtime subscriptions
-  useEffect(() => {
-    refresh();
+useEffect(() => {
+  refresh();
 
-    const chan = supabase
-      .channel(`group_${groupId}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "group_members", filter: `group_id=eq.${groupId}` },
-        () => refresh()
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "groups", filter: `id=eq.${groupId}` },
-        () => refresh()
-      )
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages", filter: `group_id=eq.${groupId}` },
-        () => refresh()
-      )
-      .subscribe();
+  const chan = supabase
+    .channel(`group_${groupId}`)
 
-    return () => {
-      supabase.removeChannel(chan);
-    };
-  }, [groupId, refresh]);
+    // ✅ member status/location/arrival changes: PATCH locally for instant UI
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "group_members", filter: `group_id=eq.${groupId}` },
+      (payload) => {
+        const ev = payload?.eventType;
+        const row = payload?.new || payload?.old;
+        if (!row?.user_id) return;
+
+        if (ev === "UPDATE" || ev === "INSERT") {
+          setMembers((prev) => {
+            const idx = prev.findIndex((m) => m.user_id === row.user_id);
+            if (idx === -1) {
+              // if we don't have this member yet, safest is refresh (to also pull profiles join)
+              refresh();
+              return prev;
+            }
+            const copy = [...prev];
+            copy[idx] = { ...copy[idx], ...payload.new }; // ✅ updates ready_state/arrived_at instantly
+            return copy;
+          });
+        } else if (ev === "DELETE") {
+          setMembers((prev) => prev.filter((m) => m.user_id !== row.user_id));
+        }
+      }
+    )
+
+    // group metadata changes (start_time/name/locked) -> refresh
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "groups", filter: `id=eq.${groupId}` },
+      () => refresh()
+    )
+
+    // meetup/messages etc -> refresh
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "messages", filter: `group_id=eq.${groupId}` },
+      () => refresh()
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(chan);
+  };
+}, [groupId, refresh]);
+
+    useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh])
+  );
 
   // center map on meetup
   useEffect(() => {

@@ -9,6 +9,8 @@ import {
   StatusBar,
   ActivityIndicator,
 } from "react-native";
+import { useFocusEffect } from "expo-router";
+import { useCallback } from "react";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
@@ -193,6 +195,14 @@ export default function Profile() {
     loadLocation();
   }, []);
 
+  useFocusEffect(
+  useCallback(() => {
+    // runs every time you navigate back to this screen
+    load();
+    loadLocation(); // optional: if you want location refreshed too
+  }, [])
+);
+
   useEffect(() => {
   let channel;
 
@@ -224,12 +234,15 @@ export default function Profile() {
   };
 }, []);
 
-  const displayName = useMemo(() => {
-    const fn = (profile?.first_name || "").trim();
-    const ln = (profile?.last_name || "").trim();
-    if (fn || ln) return `${fn} ${ln}`.trim();
-    return profile?.email || me?.email || "Profile";
-  }, [profile, me]);
+const displayName = useMemo(() => {
+  if (!profile) return "Profile";
+
+  const fn = profile.first_name?.trim();
+  const ln = profile.last_name?.trim();
+
+  if (fn || ln) return [fn, ln].filter(Boolean).join(" ");
+  return profile.email || me?.email || "Profile";
+}, [profile]);
 
   const onTime = Number.isFinite(profile?.on_time_count) ? profile.on_time_count : 0;
   const late = Number.isFinite(profile?.late_count) ? profile.late_count : 0;
@@ -240,7 +253,13 @@ export default function Profile() {
     return `${Math.round((onTime / total) * 100)}%`;
   }, [onTime, late]);
 
-const streak = Number.isFinite(profile?.punctuality_streak) ? profile.punctuality_streak : 0;
+const streak = useMemo(
+  () =>
+    Number.isFinite(profile?.punctuality_streak)
+      ? profile.punctuality_streak
+      : 0,
+  [profile]
+);
 const bestStreak = Number.isFinite(profile?.best_punctuality_streak) ? profile.best_punctuality_streak : 0;
   const topPercent = Number.isFinite(profile?.top_percent_month) ? profile.top_percent_month : null;
 

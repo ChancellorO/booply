@@ -200,42 +200,6 @@ export default function Friends() {
           </View>
         </View>
 
-        {/* Incoming Requests */}
-        <View className="px-4 mt-8">
-          <Text className="text-sm font-bold text-blue-900 tracking-wider uppercase mb-3">
-            Incoming
-          </Text>
-
-          <View className="gap-3">
-            {incoming.length === 0 ? (
-              <View className="bg-white/70 border border-gray-200 rounded-3xl p-5 shadow-sm">
-                <Text className="text-sm text-gray-600">No friend requests yet.</Text>
-              </View>
-            ) : (
-              incoming.map((r) => (
-                <Pressable
-                  key={r.id}
-                  onPress={async () => {
-                    await acceptFriendRequest(r.id);
-                    await refresh();
-                  }}
-                  className="bg-[#CFEAEC] border border-cyan-200 rounded-3xl p-5 flex-row items-center justify-between shadow-sm"
-                >
-                  <View className="flex-row items-center gap-3 flex-1">
-                    <Avatar uri={r?._fromProfile?.avatar_url} size={44} />
-                    <View className="flex-1">
-                      <Text className="text-lg font-bold text-gray-700">Accept Request</Text>
-                      <Text className="text-xs text-gray-500">From: {r?._fromName}</Text>
-                    </View>
-                  </View>
-
-                  <MaterialIcons name="chevron-right" size={22} color="#334155" />
-                </Pressable>
-              ))
-            )}
-          </View>
-        </View>
-
         {/* Friends List */}
         <View className="px-4 mt-8 pb-32">
           <Text className="text-sm font-bold text-gray-500 tracking-wider uppercase mb-3">
