@@ -60,7 +60,7 @@ export default function Profile() {
   const [profile, setProfile] = useState(null);
 
   const insets = useSafeAreaInsets();
-  const gradientColors = ["#A9CBB2", "#CFE6D8", "#F7FBF8"];
+  const gradientColors = ["#A9CBB2", "#CFE6D8", "#FCFFFE"];
 
   // location display
   const [locText, setLocText] = useState("—");
