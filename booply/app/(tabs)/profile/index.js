@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-
+import * as Location from "expo-location";
 import { supabase } from "../../../constants/supabase";
 
 const BLACK = "#18181b";
@@ -26,12 +26,39 @@ function formatTime(d = new Date()) {
   return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 }
 
+async function reverseToCityState(coords) {
+  try {
+    const res = await Location.reverseGeocodeAsync(coords);
+    const p = res?.[0];
+    if (!p) return null;
+
+    // iOS / Android vary: use best available fields
+    const city =
+      p.city ||
+      p.subregion ||
+      p.district ||
+      p.region ||
+      p.name ||
+      null;
+
+    const region = p.region || p.subregion || null;
+
+    const text = [city, region].filter(Boolean).join(", ");
+    return text || null;
+  } catch {
+    return null;
+  }
+}
+
 export default function Profile() {
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
-  const [me, setMe] = useState(null); // auth user
-  const [profile, setProfile] = useState(null); // profiles row
+  const [me, setMe] = useState(null);
+  const [profile, setProfile] = useState(null);
+
+  // location display
+  const [locText, setLocText] = useState("—");
 
   async function load() {
     setLoading(true);
@@ -55,9 +82,8 @@ export default function Profile() {
             "email",
             "first_name",
             "last_name",
-            "location",
             "avatar_url",
-            // optional fields (screen will fallback if missing/null)
+            // stats if you have them; safe if missing:
             "on_time_count",
             "late_count",
             "punctuality_score",
@@ -69,7 +95,7 @@ export default function Profile() {
 
       if (pErr) throw pErr;
 
-      // If profile row doesn't exist yet, you can upsert a minimal one
+      // Ensure a profile row exists (and seed names from auth metadata if empty)
       if (!p) {
         const email = (user.email || "").toLowerCase();
         const meta = user.user_metadata || {};
@@ -94,7 +120,37 @@ export default function Profile() {
         if (upErr) throw upErr;
         setProfile(up);
       } else {
-        setProfile(p);
+        // If the profile exists but names are blank, try backfilling once
+        const fn = (p.first_name || "").trim();
+        const ln = (p.last_name || "").trim();
+
+        if (!fn && !ln) {
+          const meta = user.user_metadata || {};
+          const fullName = meta.full_name || meta.name || "";
+          const [first, ...rest] = String(fullName).split(" ").filter(Boolean);
+          const last = rest.join(" ");
+          const fallbackFirst = meta.given_name || first || "";
+          const fallbackLast = meta.family_name || last || "";
+
+          if (fallbackFirst || fallbackLast) {
+            const { data: up2, error: upErr2 } = await supabase
+              .from("profiles")
+              .update({
+                first_name: fallbackFirst,
+                last_name: fallbackLast,
+              })
+              .eq("id", user.id)
+              .select()
+              .single();
+
+            if (!upErr2) setProfile(up2);
+            else setProfile(p);
+          } else {
+            setProfile(p);
+          }
+        } else {
+          setProfile(p);
+        }
       }
     } catch (e) {
       console.log("profile load error:", e?.message ?? e);
@@ -103,18 +159,37 @@ export default function Profile() {
     }
   }
 
+  async function loadLocation() {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setLocText("—");
+        return;
+      }
+
+      const pos = await Location.getCurrentPositionAsync({});
+      const text = await reverseToCityState({
+        latitude: pos.coords.latitude,
+        longitude: pos.coords.longitude,
+      });
+
+      setLocText(text || "—");
+    } catch (e) {
+      setLocText("—");
+    }
+  }
+
   useEffect(() => {
     load();
+    loadLocation();
   }, []);
 
   const displayName = useMemo(() => {
-    if (profile?.first_name || profile?.last_name) {
-      return `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim();
-    }
+    const fn = (profile?.first_name || "").trim();
+    const ln = (profile?.last_name || "").trim();
+    if (fn || ln) return `${fn} ${ln}`.trim();
     return profile?.email || me?.email || "Profile";
   }, [profile, me]);
-
-  const locationText = profile?.location || "—";
 
   const onTime = Number.isFinite(profile?.on_time_count) ? profile.on_time_count : 0;
   const late = Number.isFinite(profile?.late_count) ? profile.late_count : 0;
@@ -149,34 +224,24 @@ export default function Profile() {
     <View style={styles.safe}>
       <StatusBar barStyle="dark-content" />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        {/* ── Header ── */}
+        {/* Header (removed edit/settings buttons like you requested earlier) */}
         <View style={styles.header}>
-          <Pressable
-            onPress={() => router.push("/(tabs)/edit-profile")}
-            style={({ pressed }) => [styles.headerBtn, pressed && styles.pressed]}
-          >
-            <Ionicons name="pencil" size={16} color={BLACK} />
-            <Text style={styles.headerBtnText}>Edit</Text>
-          </Pressable>
-
           <Text style={styles.headerTitle}>Profile</Text>
-
-          <Pressable
-            onPress={() => router.push("/(tabs)/settings")}
-            style={({ pressed }) => [styles.headerBtn, pressed && styles.pressed]}
-          >
-            <Ionicons name="settings-outline" size={20} color={BLACK} />
-          </Pressable>
         </View>
 
-        {/* ── Profile Card ── */}
+        {/* Profile Card */}
         <View style={styles.card}>
           <View style={styles.cardTop}>
-            <View>
-              <Text style={styles.name}>{displayName}</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.name} numberOfLines={1}>
+                {displayName}
+              </Text>
+
               <View style={styles.row}>
                 <Ionicons name="location-outline" size={14} color={MUTED} />
-                <Text style={styles.muted}>{locationText}</Text>
+                <Text style={styles.muted} numberOfLines={1}>
+                  {locText}
+                </Text>
               </View>
             </View>
 
@@ -213,13 +278,14 @@ export default function Profile() {
           </View>
         </View>
 
-        {/* ── Score Card ── */}
+        {/* Score Card */}
         <View style={styles.scoreCard}>
-          <View style={styles.row}>
+          <View style={styles.scoreLeft}>
             <Text style={styles.scoreNumber}>{score}</Text>
             <Ionicons name="flame" size={32} color="#f97316" />
           </View>
-          <View>
+
+          <View style={{ alignItems: "flex-end" }}>
             <Text style={styles.scoreLabel}>Punctuality Score</Text>
             <Text style={styles.scoreSub}>
               {topPercent != null ? `Top ${topPercent}% this month` : "Keep it up this month"}
@@ -227,75 +293,48 @@ export default function Profile() {
           </View>
         </View>
 
-        {/* ── Section Label ── */}
+        {/* Quick Actions */}
         <Text style={styles.sectionLabel}>Quick Actions</Text>
 
-        {/* ── Menu Buttons ── */}
         <View style={styles.menuContainer}>
-          {[
-            {
-              label: "Edit Profile",
-              sub: "Update your info & photo",
-              icon: "person-outline",
-              route: "/(tabs)/edit-profile",
-            },
-            {
-              label: "See Stats",
-              sub: "View your punctuality history",
-              icon: "bar-chart-outline",
-              route: null,
-            },
-            {
-              label: "Achievements",
-              sub: "Badges and milestones",
-              icon: "trophy-outline",
-              route: null,
-            },
-            {
-              label: "Notifications",
-              sub: "Manage your alerts",
-              icon: "notifications-outline",
-              route: "/(tabs)/alerts",
-            },
-            {
-              label: "Settings",
-              sub: "App preferences & account",
-              icon: "settings-outline",
-              route: "/(tabs)/settings",
-            },
-          ].map((item, i) => (
-            <Pressable
-              key={i}
-              onPress={() => item.route && router.push(item.route)}
-              style={({ pressed }) => [styles.menuItem, pressed && styles.menuItemPressed]}
-            >
-              <View style={styles.menuIcon}>
-                <Ionicons name={item.icon} size={20} color={GREEN} />
-              </View>
+          {/* Edit Profile */}
+          <Pressable
+            onPress={() => router.push("/(tabs)/profile/edit")}
+            style={({ pressed }) => [styles.menuItem, pressed && styles.menuItemPressed]}
+          >
+            <View style={styles.menuIcon}>
+              <Ionicons name="person-outline" size={20} color={GREEN} />
+            </View>
+            <View style={styles.menuText}>
+              <Text style={styles.menuLabel}>Edit Profile</Text>
+              <Text style={styles.menuSub}>Update your info & photo</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={MUTED} style={{ marginLeft: "auto" }} />
+          </Pressable>
 
-              <View style={styles.menuText}>
-                <Text style={styles.menuLabel}>{item.label}</Text>
-                <Text style={styles.menuSub}>{item.sub}</Text>
-              </View>
-
-              <Ionicons
-                name="chevron-forward"
-                size={18}
-                color={MUTED}
-                style={{ marginLeft: "auto" }}
-              />
+          {/* Notifications */}
+          <Pressable
+            onPress={() => router.push("/(tabs)/profile/notifications")}
+            style={({ pressed }) => [styles.menuItem, pressed && styles.menuItemPressed]}
+          >
+            <View style={styles.menuIcon}>
+              <Ionicons name="notifications-outline" size={20} color={GREEN} />
+            </View>
+            <View style={styles.menuText}>
+              <Text style={styles.menuLabel}>Notifications</Text>
+              <Text style={styles.menuSub}>Manage your alerts</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={MUTED} style={{ marginLeft: "auto" }} />
             </Pressable>
-          ))}
+                    <Pressable style={({ pressed }) => [styles.menuItem, pressed && styles.pressed]} onPress={onLogout}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginLeft: 10}}>
+                <Ionicons name="log-out-outline" size={18} color="#ef4444" />
+                <Text style={styles.logoutText}>Log Out</Text>
+            </View>
+            </Pressable>
         </View>
 
-        {/* ── Log Out ── */}
-        <Pressable
-          style={({ pressed }) => [styles.logoutBtn, pressed && styles.pressed]}
-          onPress={onLogout}
-        >
-          <Ionicons name="log-out-outline" size={18} color="#ef4444" />
-          <Text style={styles.logoutText}>Log Out</Text>
-        </Pressable>
+        {/* Logout (fix padding-left + align icon/text) */}
       </ScrollView>
     </View>
   );
@@ -306,31 +345,16 @@ const styles = StyleSheet.create({
   scroll: { paddingBottom: 48 },
 
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingTop: 80,
-    paddingBottom: 22,
-  },
-  headerBtn: {
-    flexDirection: "row",
+    paddingTop: 70,
+    paddingBottom: 18,
     alignItems: "center",
-    gap: 6,
-    backgroundColor: GLASS,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
   },
-  headerBtnText: { fontSize: 14, fontWeight: "500", color: BLACK },
-  headerTitle: { fontSize: 18, fontWeight: "700", color: BLACK },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: BLACK,
+  },
 
   card: {
     marginHorizontal: 16,
@@ -345,24 +369,22 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     elevation: 3,
   },
-  cardTop: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-  },
+  cardTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", gap: 12 },
   name: { fontSize: 22, fontWeight: "700", color: BLACK },
-  row: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 },
-  muted: { color: MUTED, fontSize: 13 },
+  row: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 },
+  muted: { color: MUTED, fontSize: 13, flexShrink: 1 },
+
   timeBadge: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: 6,
     backgroundColor: "rgba(0,0,0,0.06)",
     paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingVertical: 6,
     borderRadius: 12,
   },
   timeBadgeText: { color: BLACK, fontSize: 13, fontWeight: "600" },
+
   avatarContainer: { alignItems: "center", marginTop: 20 },
   avatar: { width: 120, height: 120, borderRadius: 80, borderWidth: 2, borderColor: MUTED },
 
@@ -374,7 +396,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "rgba(0,0,0,0.08)",
   },
-  statItem: { alignItems: "center", gap: 4 },
+  statItem: { alignItems: "center", gap: 6 },
   statValue: { color: BLACK, fontSize: 20, fontWeight: "700" },
   statLabel: { color: MUTED, fontSize: 12 },
   statDivider: { width: 1, backgroundColor: "rgba(0,0,0,0.08)" },
@@ -386,7 +408,7 @@ const styles = StyleSheet.create({
     backgroundColor: GLASS,
     borderWidth: 1,
     borderColor: GLASS_BORDER,
-    padding: 24,
+    padding: 22,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -396,7 +418,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     elevation: 3,
   },
-  scoreNumber: { fontSize: 52, fontWeight: "800", color: GREEN, marginRight: 8 },
+  scoreLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
+  scoreNumber: { fontSize: 46, fontWeight: "800", color: GREEN },
   scoreLabel: { color: BLACK, fontSize: 16, fontWeight: "600", textAlign: "right" },
   scoreSub: { color: MUTED, fontSize: 12, marginTop: 4, textAlign: "right" },
 
@@ -432,28 +455,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   menuText: { flex: 1, marginLeft: 14 },
-  menuLabel: { color: BLACK, fontSize: 15, fontWeight: "500" },
-  menuSub: { color: MUTED, fontSize: 12 },
+  menuLabel: { color: BLACK, fontSize: 15, fontWeight: "600" },
+  menuSub: { color: MUTED, fontSize: 12, marginTop: 2 },
 
   logoutBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    alignSelf: "center",
-    gap: 8,
-    marginTop: 24,
-    paddingVertical: 14,
-    paddingHorizontal: 32,
-    borderRadius: 24,
-    backgroundColor: GLASS,
-    borderWidth: 1,
-    borderColor: "rgba(239,68,68,0.3)",
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+    alignSelf: "flex-start",
+    marginLeft: 16, // ✅ padding to the left (fix)
+    marginTop: 18,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
   },
-  logoutText: { color: "#ef4444", fontSize: 15, fontWeight: "600" },
+  logoutText: { color: "#ef4444", fontSize: 15, fontWeight: "700" },
   pressed: { opacity: 0.7 },
 });

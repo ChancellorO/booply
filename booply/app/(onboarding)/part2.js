@@ -33,7 +33,8 @@ export default function Part2() {
       if (!user) throw new Error("No user");
 
       const payload = {
-        onboarding_completed: true,
+        late_range: range, // keep this
+        // ❌ remove onboarding_completed here
       };
 
 
@@ -50,7 +51,7 @@ export default function Part2() {
 
       console.log("Profile after onboarding part2:", data);
 
-      router.replace("/(tabs)/groups");
+      router.replace("/(onboarding)/part3");
     } catch (e) {
       console.error("Onboarding part2 error:", e?.message ?? e);
     } finally {
