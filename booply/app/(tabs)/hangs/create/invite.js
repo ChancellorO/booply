@@ -10,7 +10,7 @@ import { supabase } from "../../../../constants/supabase";
 export default function CreateHangInvite() {
   const { groupId } = useLocalSearchParams();
   const insets = useSafeAreaInsets();
-  const gradientColors = ["#A9CBB2", "#CFE6D8", "#F7FBF8"];
+  const gradientColors = ["#A9CBB2", "#CFE6D8", "#FCFFFE"];
   const cardBlue = "#F3FBFC";
   const outsideLabel = "px-1 text-sm font-extrabold tracking-widest uppercase text-gray-700";
   const TAB_BAR_HEIGHT = 12; 

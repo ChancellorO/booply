@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { View, Text, Pressable, ScrollView } from "react-native";
-import { Screen } from "../../../components/ui";
+import { LinearGradient } from "expo-linear-gradient";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 import {
   listIncomingRequests,
@@ -14,11 +16,13 @@ import {
 } from "../../../constants/db";
 
 export default function Alerts() {
+  const insets = useSafeAreaInsets();
+  const gradientColors = ["#A9CBB2", "#CFE6D8", "#FCFFFE"];
+
   const [groupInvites, setGroupInvites] = useState([]);
   const [friendInvites, setFriendInvites] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedTab, setSelectedTab] = useState("groups");
-
 
   async function refresh() {
     if (loading) return;
@@ -29,31 +33,6 @@ export default function Alerts() {
         listIncomingGroupInvites(),
         listIncomingRequests(),
       ]);
-
-      console.log("Raw group invites:", gInvites);
-      console.log("Raw friend invites:", fInvites);
-
-      /*
-
-      const enrichedGroupInvites = await Promise.all(
-        (gInvites ?? []).map(async (inv) => {
-          const group_name = await getGroupNameById(inv.group_id);
-          const from_user_name = await getUserNameById(inv.from_user);
-
-          return { ...inv, group_name, from_user_name };
-        })
-      );
-
-      const enrichedFriendInvites = await Promise.all(
-        (fInvites ?? []).map(async (inv) => {
-          const from_user_name = await getUserNameById(inv.from_user);
-          return { ...inv, from_user_name };
-        })
-      );
-
-      console.log("Enriched group invites:", enrichedGroupInvites);
-      console.log("Enriched friend invites:", enrichedFriendInvites);
-      */
 
       setGroupInvites(gInvites);
       setFriendInvites(fInvites);
@@ -69,188 +48,213 @@ export default function Alerts() {
   }, []);
 
   async function onAcceptGroup(inv) {
-    try {
-      await acceptGroupInvite(inv.id);
-      refresh();
-    } catch (e) {
-      console.log("Accept group invite error:", e?.message ?? e);
-    }
+    await acceptGroupInvite(inv.id);
+    refresh();
   }
 
   async function onDeclineGroup(inv) {
-    try {
-      await declineGroupInvite(inv.id);
-      refresh();
-    } catch (e) {
-      console.log("Decline group invite error:", e?.message ?? e);
-    }
+    await declineGroupInvite(inv.id);
+    refresh();
   }
 
   async function onAcceptFriend(inv) {
-    try {
-      await acceptFriendRequest(inv.id);
-      refresh();
-    } catch (e) {
-      console.log("Accept friend request error:", e?.message ?? e);
-    }
+    await acceptFriendRequest(inv.id);
+    refresh();
   }
 
   async function onRejectFriend(inv) {
-    try {
-      await rejectFriendRequest(inv.id);
-      refresh();
-    } catch (e) {
-      console.log("Reject friend request error:", e?.message ?? e);
-    }
+    await rejectFriendRequest(inv.id);
+    refresh();
   }
 
   return (
-    <Screen>
-      <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
-        <View className="px-6 pt-14">
-          <Text className="text-3xl font-extrabold text-slate-900">Alerts</Text>
-          <Text className="mt-2 text-sm text-slate-600">Invites & updates.</Text>
-
-          {/* TOGGLE */}
-        <View className="mt-6 flex-row rounded-2xl bg-zinc-200 p-1">
-          <Pressable
-            onPress={() => setSelectedTab("groups")}
-            className={`flex-1 items-center justify-center rounded-2xl py-3 ${
-              selectedTab === "groups" ? "bg-white" : ""
-            }`}
-          >
-            <Text
-              className={`text-sm font-semibold ${
-                selectedTab === "groups" ? "text-zinc-900" : "text-zinc-600"
-              }`}
-            >
-              Group Invites
-            </Text>
-          </Pressable>
-
-          <Pressable
-            onPress={() => setSelectedTab("friends")}
-            className={`flex-1 items-center justify-center rounded-2xl py-3 ${
-              selectedTab === "friends" ? "bg-white" : ""
-            }`}
-          >
-            <Text
-              className={`text-sm font-semibold ${
-                selectedTab === "friends" ? "text-zinc-900" : "text-zinc-600"
-              }`}
-            >
-              Friend Requests
-            </Text>
-          </Pressable>
+    <LinearGradient
+      colors={gradientColors}
+      start={{ x: 0.15, y: 0 }}
+      end={{ x: 1, y: 0.85 }}
+      style={{ flex: 1, paddingTop: insets.top }}
+    >
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 140 + insets.bottom }}
+      >
+        <View className="px-4 pt-10 pb-4">
+          <Text className="text-3xl font-bold text-gray-900">Alerts</Text>
+          <Text className="mt-2 text-sm text-gray-600">
+            Invites & updates
+          </Text>
         </View>
 
-        {/* toggle switch between two tabs*/} 
+        <View className="px-4">
+
+          {/* TOGGLE */}
+          <View className="mt-4 flex-row rounded-3xl bg-white/70 border border-gray-200 p-1 shadow-sm">
+            <Pressable
+              onPress={() => setSelectedTab("groups")}
+              className={`flex-1 items-center justify-center rounded-3xl py-3 ${
+                selectedTab === "groups"
+                  ? "bg-[#CFEAEC] border border-cyan-200"
+                  : ""
+              }`}
+            >
+              <Text
+                className={`text-sm font-semibold ${
+                  selectedTab === "groups"
+                    ? "text-gray-900"
+                    : "text-gray-500"
+                }`}
+              >
+                Group Invites
+              </Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => setSelectedTab("friends")}
+              className={`flex-1 items-center justify-center rounded-3xl py-3 ${
+                selectedTab === "friends"
+                  ? "bg-[#CFEAEC] border border-cyan-200"
+                  : ""
+              }`}
+            >
+              <Text
+                className={`text-sm font-semibold ${
+                  selectedTab === "friends"
+                    ? "text-gray-900"
+                    : "text-gray-500"
+                }`}
+              >
+                Friend Requests
+              </Text>
+            </Pressable>
+          </View>
 
           {/* GROUP INVITES */}
-              {selectedTab === "groups" && (
-      <>
-        <Text className="mt-8 text-lg font-semibold text-slate-900">
-          Group invites
-        </Text>
-
-        {groupInvites.length === 0 ? (
-          <Text className="mt-3 text-sm text-slate-600">
-            No pending group invites.
-          </Text>
-        ) : (
-          groupInvites.map((inv) => (
-            <View key={i.id}
-            className="mt-4 rounded-3xl border border-zinc-100 bg-white p-5"
-            style={{
-              shadowColor: "#000",
-              shadowOpacity: 0.06,
-              shadowRadius: 10,
-              shadowOffset: { width: 0, height: 4 },
-              elevation: 2,
-            }}
-          >
-              <Text className="text-lg font-semibold text-slate-900">
-                Group
-              </Text>
-              <Text className="mt-1 text-sm text-slate-600">
-                You were invited to join a group.
+          {selectedTab === "groups" && (
+            <>
+              <Text className="mt-8 text-sm font-bold text-blue-900 tracking-wider uppercase">
+                Group Invites
               </Text>
 
-              <View className="mt-4 flex-row gap-3">
-                <Pressable
-                  onPress={() => onAcceptGroup(inv)}
-                  className="flex-1 items-center justify-center rounded-2xl bg-zinc-900 py-3"
-                >
-                  <Text className="text-sm font-semibold text-white">Accept</Text>
-                </Pressable>
+              <View className="mt-3 gap-3">
+                {groupInvites.length === 0 ? (
+                  <View className="bg-white/70 border border-gray-200 rounded-3xl p-5 shadow-sm">
+                    <Text className="text-sm text-gray-600">
+                      No pending group invites.
+                    </Text>
+                  </View>
+                ) : (
+                  groupInvites.map((inv) => (
+                    <View
+                      key={inv.id}
+                      className="bg-white border border-gray-200 rounded-3xl p-5 shadow-sm"
+                    >
+                      <View className="flex-row items-center gap-3">
+                        <MaterialIcons
+                          name="groups"
+                          size={20}
+                          color="#334155"
+                        />
+                        <View>
+                          <Text className="text-lg font-bold text-gray-700">
+                            Group Invite
+                          </Text>
+                          <Text className="text-sm text-gray-500">
+                            You were invited to join a group.
+                          </Text>
+                        </View>
+                      </View>
 
-                <Pressable
-                  onPress={() => onDeclineGroup(inv)}
-                  className="flex-1 items-center justify-center rounded-2xl bg-zinc-200 py-3"
-                >
-                  <Text className="text-sm font-semibold text-zinc-900">Decline</Text>
-                </Pressable>
+                      <View className="mt-4 flex-row gap-3">
+                        <Pressable
+                          onPress={() => onAcceptGroup(inv)}
+                          className="flex-1 items-center justify-center rounded-2xl bg-[#CFEAEC] border border-cyan-200 py-3"
+                        >
+                          <Text className="text-sm font-semibold text-gray-900">
+                            Accept
+                          </Text>
+                        </Pressable>
+
+                        <Pressable
+                          onPress={() => onDeclineGroup(inv)}
+                          className="flex-1 items-center justify-center rounded-2xl bg-gray-200 py-3"
+                        >
+                          <Text className="text-sm font-semibold text-gray-700">
+                            Decline
+                          </Text>
+                        </Pressable>
+                      </View>
+                    </View>
+                  ))
+                )}
               </View>
-            </View>
-          ))
-        )}
-      </>
-    )}
+            </>
+          )}
 
           {/* FRIEND REQUESTS */}
-                  {selectedTab === "friends" && (
-          <>
-            <Text className="mt-8 text-lg font-semibold text-slate-900">
-              Friend requests
-            </Text>
-
-            {friendInvites.length === 0 ? (
-              <Text className="mt-3 text-sm text-slate-600">
-                No pending friend requests.
+          {selectedTab === "friends" && (
+            <>
+              <Text className="mt-8 text-sm font-bold text-blue-900 tracking-wider uppercase">
+                Friend Requests
               </Text>
-            ) : (
-              friendInvites.map((i) => (
-                <View key={i.id}
-                className="mt-4 rounded-3xl border border-zinc-100 bg-white p-5"
-                style={{
-                  shadowColor: "#000",
-                  shadowOpacity: 0.06,
-                  shadowRadius: 10,
-                  shadowOffset: { width: 0, height: 4 },
-                  elevation: 2,
-                }}
-              >
-                  <Text className="text-lg font-semibold text-slate-900">
-                    Friend request
-                  </Text>
-                  <Text className="mt-1 text-sm text-slate-600">
-                    Someone wants to connect.
-                  </Text>
 
-                  <View className="mt-4 flex-row gap-3">
-                    <Pressable
-                      onPress={() => onAcceptFriend(i)}
-                      className="flex-1 items-center justify-center rounded-2xl bg-zinc-900 py-3"
-                    >
-                      <Text className="text-sm font-semibold text-white">Accept</Text>
-                    </Pressable>
-
-                    <Pressable
-                      onPress={() => onRejectFriend(i)}
-                      className="flex-1 items-center justify-center rounded-2xl bg-zinc-200 py-3"
-                    >
-                      <Text className="text-sm font-semibold text-zinc-900">Reject</Text>
-                    </Pressable>
+              <View className="mt-3 gap-3">
+                {friendInvites.length === 0 ? (
+                  <View className="bg-white/70 border border-gray-200 rounded-3xl p-5 shadow-sm">
+                    <Text className="text-sm text-gray-600">
+                      No pending friend requests.
+                    </Text>
                   </View>
-                </View>
-              ))
-            )}
-          </>
-        )}
+                ) : (
+                  friendInvites.map((inv) => (
+                    <View
+                      key={inv.id}
+                      className="bg-white border border-gray-200 rounded-3xl p-5 shadow-sm"
+                    >
+                      <View className="flex-row items-center gap-3">
+                        <MaterialIcons
+                          name="person-add"
+                          size={20}
+                          color="#334155"
+                        />
+                        <View>
+                          <Text className="text-lg font-bold text-gray-700">
+                            Friend Request
+                          </Text>
+                          <Text className="text-sm text-gray-500">
+                            Someone wants to connect.
+                          </Text>
+                        </View>
+                      </View>
+
+                      <View className="mt-4 flex-row gap-3">
+                        <Pressable
+                          onPress={() => onAcceptFriend(inv)}
+                          className="flex-1 items-center justify-center rounded-2xl bg-[#CFEAEC] border border-cyan-200 py-3"
+                        >
+                          <Text className="text-sm font-semibold text-gray-900">
+                            Accept
+                          </Text>
+                        </Pressable>
+
+                        <Pressable
+                          onPress={() => onRejectFriend(inv)}
+                          className="flex-1 items-center justify-center rounded-2xl bg-gray-200 py-3"
+                        >
+                          <Text className="text-sm font-semibold text-gray-700">
+                            Reject
+                          </Text>
+                        </Pressable>
+                      </View>
+                    </View>
+                  ))
+                )}
+              </View>
+            </>
+          )}
 
           <Pressable
             onPress={refresh}
-            className="mt-10 items-center justify-center rounded-2xl bg-zinc-900 py-3"
+            className="mt-10 items-center justify-center rounded-3xl bg-gray-900 py-4 shadow-sm"
           >
             <Text className="text-sm font-semibold text-white">
               {loading ? "Refreshing..." : "Refresh"}
@@ -258,6 +262,6 @@ export default function Alerts() {
           </Pressable>
         </View>
       </ScrollView>
-    </Screen>
+    </LinearGradient>
   );
 }

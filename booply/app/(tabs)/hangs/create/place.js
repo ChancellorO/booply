@@ -17,7 +17,7 @@ import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplet
 
 export default function CreateHangPlace() {
   const insets = useSafeAreaInsets();
-  const gradientColors = ["#A9CBB2", "#CFE6D8", "#F7FBF8"];
+  const gradientColors = ["#A9CBB2", "#CFE6D8", "#FCFFFE"];
   const cardBlue = "#F3FBFC";
   const mapRef = useRef(null); // ✅ add this
   

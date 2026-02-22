@@ -2,5 +2,5 @@
 import FriendsScreen from "../../(app)/friends";
 
 export default function FriendsTab() {
-  return <FriendsScreen />;
+  return <FriendsScreen/>;
 }

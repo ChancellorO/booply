@@ -11,7 +11,7 @@ import { fmtDateTime } from "../../../../constants/geo";
 
 export default function CreateHangTime() {
   const insets = useSafeAreaInsets();
-  const gradientColors = ["#A9CBB2", "#CFE6D8", "#F7FBF8"];
+  const gradientColors = ["#A9CBB2", "#CFE6D8", "#FCFFFE"];
   
   const { meetup_name, meetup_lat, meetup_lng } = useLocalSearchParams();
 

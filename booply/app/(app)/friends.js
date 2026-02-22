@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, Text, View, ScrollView } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+
 import { Screen, Title, Label, Input, PrimaryButton, ErrorText } from "../../components/ui";
 import {
   findUserByEmail,
@@ -11,6 +15,9 @@ import {
 } from "../../constants/db";
 
 export default function Friends() {
+  const insets = useSafeAreaInsets();
+  const gradientColors = ["#A9CBB2", "#CFE6D8", "#FCFFFE"];
+
   const [email, setEmail] = useState("");
   const [err, setErr] = useState("");
   const [info, setInfo] = useState("");
@@ -33,13 +40,15 @@ export default function Friends() {
   }, []);
 
   const onAdd = async () => {
-    setErr(""); setInfo("");
+    setErr("");
+    setInfo("");
     try {
-    const me = await getMe();
-    const user = await findUserByEmail(email);
+      const me = await getMe();
+      const user = await findUserByEmail(email);
 
-    if (!user) throw new Error("No user found with that email.");
-    if (user.id === me.id) throw new Error("You can’t add yourself.");
+      if (!user) throw new Error("No user found with that email.");
+      if (user.id === me.id) throw new Error("You can’t add yourself.");
+
       await sendFriendRequest(user.id);
       setInfo("Friend request sent ✅");
       setEmail("");
@@ -50,55 +59,145 @@ export default function Friends() {
   };
 
   return (
-    <Screen>
-      <Title>Friends</Title>
-
-      <Label>Add friend by email</Label>
-      <Input
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-        placeholder="friend@email.com"
-      />
-
-      <ErrorText>{err}</ErrorText>
-      {info ? <Text className="mt-2 text-sm text-green-600">{info}</Text> : null}
-
-      <PrimaryButton title="Send request" onPress={onAdd} disabled={!email.trim()} />
-
-      <Text className="mt-8 text-sm font-semibold text-zinc-700">Incoming requests</Text>
-      <View className="mt-3 gap-2">
-        {incoming.map((r) => (
-          <Pressable
-            key={r.id}
-            className="rounded-2xl border border-zinc-200 bg-white p-4"
-            onPress={async () => {
-              await acceptFriendRequest(r.id);
-              await refresh();
-            }}
-          >
-            <Text className="text-base font-semibold text-zinc-900">Accept request</Text>
-            <Text className="mt-1 text-xs text-zinc-500">From: {r.from_user}</Text>
-          </Pressable>
-        ))}
-        {incoming.length === 0 ? (
-          <Text className="text-sm text-zinc-500">No requests</Text>
-        ) : null}
+    <LinearGradient
+      colors={gradientColors}
+      start={{ x: 0.15, y: 0 }}
+      end={{ x: 1, y: 0.85 }}
+      style={{ flex: 1, paddingTop: insets.top }}
+    >
+      {/* Header */}
+      <View className="px-4 pt-10 pb-4">
+        <Text className="text-3xl font-bold text-gray-900">Friends</Text>
       </View>
 
-      <Text className="mt-8 text-sm font-semibold text-zinc-700">Your friends</Text>
-      <View className="mt-3 gap-2">
-        {friends.map((f) => (
-          <View key={f.id} className="rounded-2xl border border-zinc-200 bg-white p-4">
-            <Text className="text-base font-semibold text-zinc-900">
-              {f.first_name} {f.last_name}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingBottom: 140 + insets.bottom,
+        }}
+        className="flex-1"
+      >
+        {/* Add Friend Section */}
+        <View className="px-4 mt-2">
+          <View className="bg-white/80 border border-gray-200 rounded-3xl p-5 shadow-sm">
+            <Text className="text-sm font-bold text-blue-900 tracking-wider uppercase mb-3">
+              Add Friend
             </Text>
-            <Text className="mt-1 text-sm text-zinc-600">{f.email}</Text>
+
+            <Input
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              placeholder="friend@email.com"
+            />
+
+            <ErrorText>{err}</ErrorText>
+
+            {info ? (
+              <Text className="mt-2 text-sm text-emerald-600">{info}</Text>
+            ) : null}
+
+            <View className="mt-4">
+              <PrimaryButton
+                title="Send request"
+                onPress={onAdd}
+                disabled={!email.trim()}
+              />
+            </View>
           </View>
-        ))}
-        {friends.length === 0 ? <Text className="text-sm text-zinc-500">No friends yet</Text> : null}
-      </View>
-    </Screen>
+        </View>
+
+        {/* Incoming Requests */}
+        <View className="px-4 mt-8">
+          <Text className="text-sm font-bold text-blue-900 tracking-wider uppercase mb-3">
+            Incoming
+          </Text>
+
+          <View className="gap-3">
+            {incoming.length === 0 ? (
+              <View className="bg-white/70 border border-gray-200 rounded-3xl p-5 shadow-sm">
+                <Text className="text-sm text-gray-600">
+                  No friend requests yet.
+                </Text>
+              </View>
+            ) : (
+              incoming.map((r) => (
+                <Pressable
+                  key={r.id}
+                  onPress={async () => {
+                    await acceptFriendRequest(r.id);
+                    await refresh();
+                  }}
+                  className="bg-[#CFEAEC] border border-cyan-200 rounded-3xl p-5 flex-row items-center justify-between shadow-sm"
+                >
+                  <View className="flex-row items-center gap-3 flex-1">
+                    <MaterialIcons
+                      name="person-add"
+                      size={20}
+                      color="#334155"
+                    />
+                    <View className="flex-1">
+                      <Text className="text-lg font-bold text-gray-700">
+                        Accept Request
+                      </Text>
+                      <Text className="text-xs text-gray-500">
+                        From: {r.from_user}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <MaterialIcons
+                    name="chevron-right"
+                    size={22}
+                    color="#334155"
+                  />
+                </Pressable>
+              ))
+            )}
+          </View>
+        </View>
+
+        {/* Friends List */}
+        <View className="px-4 mt-8 pb-32">
+          <Text className="text-sm font-bold text-gray-500 tracking-wider uppercase mb-3">
+            Your Friends
+          </Text>
+
+          <View className="gap-3">
+            {friends.length === 0 ? (
+              <View className="bg-white/70 border border-gray-200 rounded-3xl p-5 shadow-sm">
+                <Text className="text-sm text-gray-600">
+                  No friends yet.
+                </Text>
+              </View>
+            ) : (
+              friends.map((f) => (
+                <View
+                  key={f.id}
+                  className="bg-white border border-gray-200 rounded-3xl p-5 shadow-sm"
+                >
+                  <View className="flex-row items-center gap-3">
+                    <MaterialIcons
+                      name="person"
+                      size={20}
+                      color="#64748b"
+                    />
+                    <View>
+                      <Text className="text-lg font-bold text-gray-700">
+                        {f.first_name} {f.last_name}
+                      </Text>
+                      <Text className="text-sm text-gray-500">
+                        {f.email}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              ))
+            )}
+          </View>
+        </View>
+      </ScrollView>
+    </LinearGradient>
   );
 }
