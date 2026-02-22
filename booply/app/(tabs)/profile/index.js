@@ -354,7 +354,7 @@ export default function Profile() {
 
           {/* Log Out */}
           <Pressable
-            onPress={() => router.push("/(tabs)/profile/edit")}
+            onPress={onLogout}
             style={({ pressed }) => [styles.menuItem, pressed && styles.menuItemPressed]}
           >
             <View style={styles.menuLeft}>

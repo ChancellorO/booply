@@ -10,6 +10,22 @@ export async function getMe() {
   return data.user;
 }
 
+export async function setRandomScore(userId) {  
+  
+  const randomScore = Math.floor(Math.random() * 1000); // Random score between 0 and 999
+  console.log(`Setting random punctuality score for user ${userId}: ${randomScore}`);
+  const { data, error } = await supabase
+    .from("profiles")
+    .update({ punctuality_score: randomScore })
+    .eq("id", userId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+
 /** -------------------------
  * Groups / Hangs
  * ------------------------*/

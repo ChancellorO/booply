@@ -3,6 +3,7 @@ import { View, Text, Pressable, TextInput } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../../constants/supabase";
+import { setRandomScore } from "../../constants/db";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
@@ -34,6 +35,7 @@ export default function Signup() {
       // Hackathon-friendly:
       // If email confirmation is ON, user may need to log in after confirming.
       // You can route to login and show a message.
+      await setRandomScore(data.user.id); // set random punctuality score for demo purposes
       router.replace("/(auth)/login");
     } catch (e) {
       setErr(e?.message ?? "Sign up failed.");
