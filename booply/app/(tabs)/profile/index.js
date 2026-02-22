@@ -13,12 +13,14 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { supabase } from "../../../constants/supabase";
+import { LinearGradient } from "expo-linear-gradient";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const BLACK = "#18181b";
 const GREEN = "#16a34a";
 const MUTED = "rgba(0,0,0,0.45)";
-const GLASS = "rgba(255,255,255,0.45)";
-const GLASS_BORDER = "rgba(255,255,255,0.6)";
+const GLASS = "rgba(255,255,255,0.7)";
+const GLASS_BORDER = "rgba(229,231,235,0.95)";
 
 const fallbackAvatar = require("../../../assets/images/dumbways.png");
 
@@ -56,6 +58,9 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [me, setMe] = useState(null);
   const [profile, setProfile] = useState(null);
+
+  const insets = useSafeAreaInsets();
+  const gradientColors = ["#A9CBB2", "#CFE6D8", "#F7FBF8"];
 
   // location display
   const [locText, setLocText] = useState("—");
@@ -221,10 +226,18 @@ export default function Profile() {
   }
 
   return (
-    <View style={styles.safe}>
+    <LinearGradient
+      colors={gradientColors}
+      start={{ x: 0.15, y: 0 }}
+      end={{ x: 1, y: 0.85 }}
+      style={{ flex: 1, paddingTop: insets.top }}
+    >
       <StatusBar barStyle="dark-content" />
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        {/* Header (removed edit/settings buttons like you requested earlier) */}
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Profile</Text>
         </View>
@@ -302,41 +315,66 @@ export default function Profile() {
             onPress={() => router.push("/(tabs)/profile/edit")}
             style={({ pressed }) => [styles.menuItem, pressed && styles.menuItemPressed]}
           >
-            <View style={styles.menuIcon}>
-              <Ionicons name="person-outline" size={20} color={GREEN} />
+            <View style={styles.menuLeft}>
+              <View style={styles.menuIcon}>
+                <Ionicons name="person-outline" size={20} color={GREEN} />
+              </View>
+
+              <View style={styles.menuText}>
+                <Text style={styles.menuLabel}>Edit Profile</Text>
+                <Text style={styles.menuSub}>Update your info & photo</Text>
+              </View>
             </View>
-            <View style={styles.menuText}>
-              <Text style={styles.menuLabel}>Edit Profile</Text>
-              <Text style={styles.menuSub}>Update your info & photo</Text>
+
+            <View style={styles.chevronWrap}>
+              <Ionicons name="chevron-forward" size={18} color={MUTED}/>
             </View>
-            <Ionicons name="chevron-forward" size={18} color={MUTED} style={{ marginLeft: "auto" }} />
           </Pressable>
 
           {/* Notifications */}
           <Pressable
-            onPress={() => router.push("/(tabs)/profile/notifications")}
+            onPress={() => router.push("/(tabs)/profile/edit")}
             style={({ pressed }) => [styles.menuItem, pressed && styles.menuItemPressed]}
           >
-            <View style={styles.menuIcon}>
-              <Ionicons name="notifications-outline" size={20} color={GREEN} />
-            </View>
-            <View style={styles.menuText}>
-              <Text style={styles.menuLabel}>Notifications</Text>
-              <Text style={styles.menuSub}>Manage your alerts</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={MUTED} style={{ marginLeft: "auto" }} />
-            </Pressable>
-                    <Pressable style={({ pressed }) => [styles.menuItem, pressed && styles.pressed]} onPress={onLogout}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginLeft: 10}}>
-                <Ionicons name="log-out-outline" size={18} color="#ef4444" />
-                <Text style={styles.logoutText}>Log Out</Text>
-            </View>
-            </Pressable>
-        </View>
+            <View style={styles.menuLeft}>
+              <View style={styles.menuIcon}>
+                <Ionicons name="notifications-outline" size={20} color={GREEN} />
+              </View>
 
-        {/* Logout (fix padding-left + align icon/text) */}
+              <View style={styles.menuText}>
+                <Text style={styles.menuLabel}>Notifications</Text>
+                <Text style={styles.menuSub}>Manage your alerts</Text>
+              </View>
+            </View>
+
+            <View style={styles.chevronWrap}>
+              <Ionicons name="chevron-forward" size={18} color={MUTED}/>
+            </View>
+          </Pressable>
+
+          {/* Log Out */}
+          <Pressable
+            onPress={() => router.push("/(tabs)/profile/edit")}
+            style={({ pressed }) => [styles.menuItem, pressed && styles.menuItemPressed]}
+          >
+            <View style={styles.menuLeft}>
+              <View style={[styles.menuIcon, styles.menuIconDanger]}>
+                <Ionicons name="log-out-outline" size={20} color="#ef4444" />
+              </View>
+
+              <View style={styles.menuText}>
+                <Text style={styles.menuLabel}>Log Out</Text>
+                <Text style={styles.menuSub}>Sign out of your account</Text>
+              </View>
+            </View>
+
+            <View style={styles.chevronWrap}>
+              <Ionicons name="chevron-forward" size={18} color={MUTED}/>
+            </View>
+          </Pressable>
+        </View>
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -436,25 +474,45 @@ const styles = StyleSheet.create({
 
   menuContainer: { marginHorizontal: 16, gap: 10 },
   menuItem: {
+    width: "100%",
+    position: "relative",
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderRadius: 18,
+
+    paddingHorizontal: 18,
+    paddingVertical: 18,
+    paddingRight: 54,              // ✅ reserve space for chevron
+
+    borderRadius: 24,
     backgroundColor: GLASS,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: GLASS_BORDER,
+
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
+
+  menuLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    minWidth: 0, // important so text can shrink instead of pushing layout weirdly
+  },
+
   menuItemPressed: { opacity: 0.75 },
   menuIcon: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    backgroundColor: "rgba(34,197,94,0.12)",
+    width: 46,
+    height: 46,
+    borderRadius: 16,
+    backgroundColor: "rgba(22,163,74,0.14)", // soft green tint
     alignItems: "center",
     justifyContent: "center",
+    flexShrink: 0,
   },
-  menuText: { flex: 1, marginLeft: 14 },
+  menuText: { flex: 1, marginLeft: 14, minWidth: 0 },
   menuLabel: { color: BLACK, fontSize: 15, fontWeight: "600" },
   menuSub: { color: MUTED, fontSize: 12, marginTop: 2 },
 
@@ -465,6 +523,19 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 12,
   },
-  logoutText: { color: "#ef4444", fontSize: 15, fontWeight: "700" },
+  logoutText: { color: "#ef4444", fontSize: 15, fontWeight: "600" },
   pressed: { opacity: 0.7 },
+
+  chevronWrap: {
+    position: "absolute",          // ✅ force to the right
+  right: 18,
+  top: 0,
+  bottom: 0,
+  justifyContent: "center",      // ✅ vertical center
+  alignItems: "center",
+  },
+
+  menuIconDanger: {
+    backgroundColor: "rgba(239,68,68,0.14)",
+  },
 });
