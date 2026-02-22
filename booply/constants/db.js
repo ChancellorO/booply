@@ -422,3 +422,43 @@ export async function declineGroupInvite(inviteId) {
   if (error) throw error;
   return true;
 }
+
+export async function rejectFriendRequest(requestId) {
+  const { error } = await supabase
+    .from("friend_requests")
+    .update({ status: "rejected" })
+    .eq("id", requestId)
+    .eq("status", "pending");
+
+  if (error) throw error;
+  return true;
+}
+
+
+export async function getGroupNameById(groupId) {
+  const { data, error } = await supabase
+    .from("group_places")
+    .select("name")
+    .eq("group_id", groupId)
+    .eq("kind", "meetup")   // ensures you're getting the actual hang name
+    .maybeSingle();
+
+  if (error) throw error;
+
+  return data?.name ?? "Hang";
+}
+
+
+export async function getUserNameById(userId) {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("first_name, last_name")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (error) throw error;
+
+  if (!data) return "Someone";
+
+  return `${data.first_name ?? ""} ${data.last_name ?? ""}`.trim();
+}

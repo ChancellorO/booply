@@ -1,44 +1,65 @@
 import { useEffect, useState } from "react";
 import { View, Text, Pressable, ScrollView } from "react-native";
-import { Screen, Card } from "../../../components/ui";
-import { supabase } from "../../../constants/supabase";
+import { Screen } from "../../../components/ui";
+
 import {
   listIncomingRequests,
   acceptFriendRequest,
-  // add this if you have it
-  // rejectFriendRequest,
-} from "../../../constants/db"; // <-- your import path was likely wrong
+  rejectFriendRequest,
+  listIncomingGroupInvites,
+  acceptGroupInvite,
+  declineGroupInvite,
+  getUserNameById,
+  getGroupNameById,
+} from "../../../constants/db";
 
 export default function Alerts() {
   const [groupInvites, setGroupInvites] = useState([]);
   const [friendInvites, setFriendInvites] = useState([]);
+  const [loading, setLoading] = useState(false);
+
 
   async function refresh() {
-    const { data: userData, error: userErr } = await supabase.auth.getUser();
-    if (userErr) console.log(userErr.message);
-    const me = userData?.user;
-    if (!me?.id) return;
+    if (loading) return;
+    setLoading(true);
 
-    // 1) group invites
-    const g = await supabase
-      .from("group_invites")
-      .select("id,group_id,from_user,status,created_at, groups(name)")
-      .eq("to_user", me.id)
-      .eq("status", "pending")
-      .order("created_at", { ascending: false });
-
-    if (g.error) {
-      console.log("Group invites error:", g.error.message);
-    } else {
-      setGroupInvites(g.data ?? []);
-    }
-
-    // 2) friend requests
     try {
-      const incoming = await listIncomingRequests(); // expected array
-      setFriendInvites(incoming ?? []);
+      const [gInvites, fInvites] = await Promise.all([
+        listIncomingGroupInvites(),
+        listIncomingRequests(),
+      ]);
+
+      console.log("Raw group invites:", gInvites);
+      console.log("Raw friend invites:", fInvites);
+
+      /*
+
+      const enrichedGroupInvites = await Promise.all(
+        (gInvites ?? []).map(async (inv) => {
+          const group_name = await getGroupNameById(inv.group_id);
+          const from_user_name = await getUserNameById(inv.from_user);
+
+          return { ...inv, group_name, from_user_name };
+        })
+      );
+
+      const enrichedFriendInvites = await Promise.all(
+        (fInvites ?? []).map(async (inv) => {
+          const from_user_name = await getUserNameById(inv.from_user);
+          return { ...inv, from_user_name };
+        })
+      );
+
+      console.log("Enriched group invites:", enrichedGroupInvites);
+      console.log("Enriched friend invites:", enrichedFriendInvites);
+      */
+
+      setGroupInvites(gInvites);
+      setFriendInvites(fInvites);
     } catch (e) {
-      console.log("Friend invites error:", e?.message ?? e);
+      console.log("Alerts refresh error:", e?.message ?? e);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -46,50 +67,39 @@ export default function Alerts() {
     refresh();
   }, []);
 
-  // --- group accept/reject
-  async function acceptGroupInvite(inv) {
-    const { data: userData } = await supabase.auth.getUser();
-    const me = userData?.user;
-    if (!me?.id) return;
-
-    await supabase.from("group_invites").update({ status: "accepted" }).eq("id", inv.id);
-
-    const ins = await supabase
-      .from("group_members")
-      .insert({ group_id: inv.group_id, user_id: me.id, role: "member", status: "active" });
-
-    if (ins.error && ins.error.code !== "23505") console.log(ins.error);
-
-    refresh();
-  }
-
-  async function rejectGroupInvite(inv) {
-    await supabase.from("group_invites").update({ status: "rejected" }).eq("id", inv.id);
-    refresh();
-  }
-
-  // --- friend accept/reject
-  async function acceptFriend(inv) {
+  async function onAcceptGroup(inv) {
     try {
-      // depending on your helper signature:
-      // await acceptFriendRequest(inv.id)
-      await acceptFriendRequest(inv);
+      await acceptGroupInvite(inv.id);
       refresh();
     } catch (e) {
-      console.log("Accept friend error:", e?.message ?? e);
+      console.log("Accept group invite error:", e?.message ?? e);
     }
   }
 
-  async function rejectFriend(inv) {
+  async function onDeclineGroup(inv) {
     try {
-      // you NEED a DB helper or supabase query for this.
-      // Example if you have a table "friend_requests":
-      // await supabase.from("friend_requests").update({ status: "rejected" }).eq("id", inv.id);
-
-      console.log("TODO: implement rejectFriendRequest");
+      await declineGroupInvite(inv.id);
       refresh();
     } catch (e) {
-      console.log("Reject friend error:", e?.message ?? e);
+      console.log("Decline group invite error:", e?.message ?? e);
+    }
+  }
+
+  async function onAcceptFriend(inv) {
+    try {
+      await acceptFriendRequest(inv.id);
+      refresh();
+    } catch (e) {
+      console.log("Accept friend request error:", e?.message ?? e);
+    }
+  }
+
+  async function onRejectFriend(inv) {
+    try {
+      await rejectFriendRequest(inv.id);
+      refresh();
+    } catch (e) {
+      console.log("Reject friend request error:", e?.message ?? e);
     }
   }
 
@@ -102,74 +112,77 @@ export default function Alerts() {
 
           {/* GROUP INVITES */}
           <Text className="mt-8 text-lg font-semibold text-slate-900">Group invites</Text>
-
           {groupInvites.length === 0 ? (
             <Text className="mt-3 text-sm text-slate-600">No pending group invites.</Text>
           ) : (
             groupInvites.map((inv) => (
-              <Card key={inv.id} className="mt-4 bg-white/70">
+              <View key={inv.id} className="mt-4 bg-white/70">
                 <Text className="text-lg font-semibold text-slate-900">
-                  {inv.groups?.name ?? "Group invite"}
+                  Group
                 </Text>
-                <Text className="mt-1 text-sm text-slate-600">You were invited to join.</Text>
+                <Text className="mt-1 text-sm text-slate-600">
+                  You were invited to join a group.
+                </Text>
 
                 <View className="mt-4 flex-row gap-3">
                   <Pressable
-                    onPress={() => acceptGroupInvite(inv)}
+                    onPress={() => onAcceptGroup(inv)}
                     className="flex-1 items-center justify-center rounded-2xl bg-zinc-900 py-3"
                   >
                     <Text className="text-sm font-semibold text-white">Accept</Text>
                   </Pressable>
 
                   <Pressable
-                    onPress={() => rejectGroupInvite(inv)}
+                    onPress={() => onDeclineGroup(inv)}
                     className="flex-1 items-center justify-center rounded-2xl bg-zinc-200 py-3"
                   >
-                    <Text className="text-sm font-semibold text-zinc-900">Reject</Text>
+                    <Text className="text-sm font-semibold text-zinc-900">Decline</Text>
                   </Pressable>
                 </View>
-              </Card>
+              </View>
             ))
           )}
 
           {/* FRIEND REQUESTS */}
           <Text className="mt-10 text-lg font-semibold text-slate-900">Friend requests</Text>
-
           {friendInvites.length === 0 ? (
             <Text className="mt-3 text-sm text-slate-600">No pending friend requests.</Text>
           ) : (
-            friendInvites.map((inv) => (
-              <Card key={inv.id} className="mt-4 bg-white/70">
+            friendInvites.map((i) => (
+              <View key={i.id} className="mt-4 bg-white/70">
                 <Text className="text-lg font-semibold text-slate-900">
-                  {inv.from_name ?? inv.from_email ?? "Friend request"}
+                  Friend request
                 </Text>
-                <Text className="mt-1 text-sm text-slate-600">Wants to connect.</Text>
+                <Text className="mt-1 text-sm text-slate-600">
+                  Someone wants to connect.
+                </Text>
 
                 <View className="mt-4 flex-row gap-3">
                   <Pressable
-                    onPress={() => acceptFriend(inv)}
+                    onPress={() => onAcceptFriend(i)}
                     className="flex-1 items-center justify-center rounded-2xl bg-zinc-900 py-3"
                   >
                     <Text className="text-sm font-semibold text-white">Accept</Text>
                   </Pressable>
 
                   <Pressable
-                    onPress={() => rejectFriend(inv)}
+                    onPress={() => onRejectFriend(i)}
                     className="flex-1 items-center justify-center rounded-2xl bg-zinc-200 py-3"
                   >
                     <Text className="text-sm font-semibold text-zinc-900">Reject</Text>
                   </Pressable>
                 </View>
-              </Card>
+              </View>
             ))
           )}
 
-          {/* optional refresh button */}
           <Pressable
             onPress={refresh}
             className="mt-10 items-center justify-center rounded-2xl bg-zinc-900 py-3"
           >
-            <Text className="text-sm font-semibold text-white">Refresh</Text>
+            <Text className="text-sm font-semibold text-white">
+              {loading ? "Refreshing..." : "Refresh"}
+            </Text>
           </Pressable>
         </View>
       </ScrollView>
