@@ -1,4 +1,4 @@
-import { View, Text, Image, Pressable, ScrollView, StyleSheet, StatusBar,} from "react-native";
+import {  View,Text, Image, Pressable, ScrollView, StyleSheet, StatusBar,} from "react-native";
   import { useRouter } from "expo-router";
   import { Ionicons } from "@expo/vector-icons";
   
@@ -9,19 +9,25 @@ import { View, Text, Image, Pressable, ScrollView, StyleSheet, StatusBar,} from 
   const GLASS = "rgba(255,255,255,0.45)";
   const GLASS_BORDER = "rgba(255,255,255,0.6)";
   
-export default function Profile() {
+  export default function Profile() {
     const router = useRouter();
   
     return (
       <View style={styles.safe}>
         <StatusBar barStyle="dark-content" />
-        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
   
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          showsVerticalScrollIndicator={false}
+        >
           {/* ── Header ── */}
           <View style={styles.header}>
             <Pressable
               onPress={() => router.push("/(tabs)/edit-profile")}
-              style={({ pressed }) => [styles.headerBtn, pressed && styles.pressed]}
+              style={({ pressed }) => [
+                styles.headerBtn,
+                pressed && styles.pressed,
+              ]}
             >
               <Ionicons name="pencil" size={16} color={BLACK} />
               <Text style={styles.headerBtnText}>Edit</Text>
@@ -31,7 +37,10 @@ export default function Profile() {
   
             <Pressable
               onPress={() => router.push("/(tabs)/settings")}
-              style={({ pressed }) => [styles.headerBtn, pressed && styles.pressed]}
+              style={({ pressed }) => [
+                styles.headerBtn,
+                pressed && styles.pressed,
+              ]}
             >
               <Ionicons name="settings-outline" size={20} color={BLACK} />
             </Pressable>
@@ -43,10 +52,15 @@ export default function Profile() {
               <View>
                 <Text style={styles.name}>Haley Ngai</Text>
                 <View style={styles.row}>
-                  <Ionicons name="location-outline" size={14} color={MUTED} />
+                  <Ionicons
+                    name="location-outline"
+                    size={14}
+                    color={MUTED}
+                  />
                   <Text style={styles.muted}>New York</Text>
                 </View>
               </View>
+  
               <View style={styles.timeBadge}>
                 <Ionicons name="time-outline" size={14} color={BLACK} />
                 <Text style={styles.timeBadgeText}>5:30 AM</Text>
@@ -55,7 +69,7 @@ export default function Profile() {
   
             <View style={styles.avatarContainer}>
               <Image
-               source={require("../../assets/images/dumbways.png")}
+                source={require("../../assets/images/dumbways.png")}
                 style={styles.avatar}
               />
             </View>
@@ -66,12 +80,16 @@ export default function Profile() {
                 <Text style={styles.statValue}>142</Text>
                 <Text style={styles.statLabel}>On Time</Text>
               </View>
+  
               <View style={styles.statDivider} />
+  
               <View style={styles.statItem}>
                 <Text style={styles.statValue}>12</Text>
                 <Text style={styles.statLabel}>Late</Text>
               </View>
+  
               <View style={styles.statDivider} />
+  
               <View style={styles.statItem}>
                 <Text style={styles.statValue}>98%</Text>
                 <Text style={styles.statLabel}>Rate</Text>
@@ -85,6 +103,7 @@ export default function Profile() {
               <Text style={styles.scoreNumber}>280</Text>
               <Ionicons name="flame" size={32} color="#f97316" />
             </View>
+  
             <View>
               <Text style={styles.scoreLabel}>Punctuality Score</Text>
               <Text style={styles.scoreSub}>Top 5% this month </Text>
@@ -127,8 +146,9 @@ export default function Profile() {
                 icon: "settings-outline",
                 route: "/(tabs)/settings",
               },
-            ].map((item, i) => (
-                <Pressable
+            ].map((item) => (
+              <Pressable
+                key={item.label}
                 onPress={() => item.route && router.push(item.route)}
                 style={({ pressed }) => [
                   styles.menuItem,
@@ -138,12 +158,12 @@ export default function Profile() {
                 <View style={styles.menuIcon}>
                   <Ionicons name={item.icon} size={20} color={GREEN} />
                 </View>
-              
+  
                 <View style={styles.menuText}>
                   <Text style={styles.menuLabel}>{item.label}</Text>
                   <Text style={styles.menuSub}>{item.sub}</Text>
                 </View>
-              
+  
                 <Ionicons
                   name="chevron-forward"
                   size={18}
@@ -155,14 +175,22 @@ export default function Profile() {
           </View>
   
           {/* ── Log Out ── */}
-          <Pressable
-            style={({ pressed }) => [styles.logoutBtn, pressed && styles.pressed]}
-            onPress={() => {}}
-          >
-            <Ionicons name="log-out-outline" size={18} color="#ef4444" />
-            <Text style={styles.logoutText}>Log Out</Text>
-          </Pressable>
-  
+          <View style={{ alignItems: "center", marginTop: 24 }}>
+            <Pressable
+              style={({ pressed }) => [
+                styles.logoutBtn,
+                pressed && styles.pressed,
+              ]}
+              onPress={() => {}}
+            >
+              <Ionicons
+                name="log-out-outline"
+                size={18}
+                color="#ef4444"
+              />
+              <Text style={styles.logoutText}>Log Out</Text>
+            </Pressable>
+          </View>
         </ScrollView>
       </View>
     );
@@ -175,9 +203,9 @@ export default function Profile() {
     },
     scroll: {
       paddingBottom: 48,
+      flexGrow: 1,
     },
   
-    // Header
     header: {
       flexDirection: "row",
       alignItems: "center",
@@ -213,7 +241,6 @@ export default function Profile() {
       color: BLACK,
     },
   
-    // Profile Card
     card: {
       marginHorizontal: 16,
       borderRadius: 24,
@@ -309,7 +336,6 @@ export default function Profile() {
       backgroundColor: "rgba(0,0,0,0.08)",
     },
   
-    // Score Card
     scoreCard: {
       marginHorizontal: 16,
       marginTop: 12,
@@ -346,7 +372,6 @@ export default function Profile() {
       textAlign: "right",
     },
   
-    // Section label
     sectionLabel: {
       marginHorizontal: 20,
       marginTop: 24,
@@ -358,22 +383,20 @@ export default function Profile() {
       letterSpacing: 0.8,
     },
   
-    // Menu
     menuContainer: {
       marginHorizontal: 16,
       gap: 10,
     },
     menuItem: {
-        flexDirection: "row",
-        alignItems: "center",
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-        borderRadius: 18,
-        backgroundColor: GLASS,
-        borderWidth: 2,
-        borderColor: GLASS_BORDER,
-      },
-
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: 20,
+      paddingVertical: 16,
+      borderRadius: 18,
+      backgroundColor: GLASS,
+      borderWidth: 2,
+      borderColor: GLASS_BORDER,
+    },
     menuItemPressed: {
       opacity: 0.75,
     },
@@ -386,10 +409,8 @@ export default function Profile() {
       justifyContent: "center",
     },
     menuText: {
-        flex: 1,
-        marginLeft: 14,
-    
-
+      flex: 1,
+      marginLeft: 14,
     },
     menuLabel: {
       color: BLACK,
@@ -401,32 +422,23 @@ export default function Profile() {
       fontSize: 12,
     },
   
-    // Log out
     logoutBtn: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      alignSelf: "center",
-      gap: 8,
-      marginTop: 24,
-      paddingVertical: 14,
-      paddingHorizontal: 32,
+      paddingVertical: 16,
+      paddingHorizontal: -100,
       borderRadius: 24,
       backgroundColor: GLASS,
       borderWidth: 1,
       borderColor: "rgba(239,68,68,0.3)",
-      shadowColor: "#000",
-      shadowOpacity: 0.05,
-      shadowRadius: 8,
-      shadowOffset: { width: 0, height: 2 },
-      elevation: 2,
+      paddingLeft: 100
     },
     logoutText: {
       color: "#ef4444",
       fontSize: 15,
       fontWeight: "600",
     },
-  
     pressed: {
       opacity: 0.7,
     },
