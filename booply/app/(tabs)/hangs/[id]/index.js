@@ -8,7 +8,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import polyline from "@mapbox/polyline";
-
+import { updateMyEtaForGroup } from "../../../../constants/compute_eta";
+ 
 import {
   getLatestMeetup,
   listGroupMembers,
