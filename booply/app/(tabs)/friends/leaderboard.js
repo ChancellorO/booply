@@ -4,61 +4,74 @@ import { Animated, Image, Pressable, ScrollView, Text, TextInput, View } from 'r
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { router } from "expo-router";
+import { supabase } from "../../../constants/supabase";
 
 
 // Mock leaderboard data
-const LEADERBOARD_DATA = [
-  {
+/*{
     rank: 4,
     id: '1',
     name: 'Stephen',
     handle: 'stephen965107',
     points: 4570,
     avatar: 'https://i.pravatar.cc/150?img=1',
-  },
-  {
-    rank: 5,
-    id: '2',
-    name: 'Tony',
-    handle: 'tony67510745',
-    points: 4570,
-    avatar: 'https://i.pravatar.cc/150?img=2',
-  },
-  {
-    rank: 6,
-    id: '3',
-    name: 'Steve',
-    handle: 'steve09898921',
-    points: 4570,
-    avatar: 'https://i.pravatar.cc/150?img=3',
-  },
-  {
-    rank: 7,
-    id: '4',
-    name: 'Bruice',
-    handle: 'bruice1119725',
-    points: 4570,
-    avatar: 'https://i.pravatar.cc/150?img=4',
-  },
-  {
-    rank: 8,
-    id: '5',
-    name: 'Stephen',
-    handle: 'stephen965107',
-    points: 4570,
-    avatar: 'https://i.pravatar.cc/150?img=5',
-  },
-];
+  }, */
 
 export default function LeaderboardScreen() {
   const insets = useSafeAreaInsets();
+  const [ leaderboardData, setLeaderboardData ] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
 
   const [filter, setFilter] = useState('weekly');
   const [searchQuery, setSearchQuery] = useState('');
 
   const [mode, setMode] = useState('bloopies'); // 'bloopies' | 'ploopies'
+  const isAscending = mode === 'ploopies';
 
   const anim = useRef(new Animated.Value(mode === 'bloopies' ? 0 : 1)).current;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadLeaderboard() {
+      setLoading(true);
+      setError(null);
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, first_name, last_name, email, avatar_url, punctuality_score")
+        .order("punctuality_score", { ascending: isAscending }) // bloopies high->low, ploopies low->high
+        .limit(100);
+
+      if (cancelled) return;
+
+      if (error) {
+        setError(error.message);
+        setLeaderboardData([]);
+        setLoading(false);
+        return;
+      }
+
+      const rows  =
+        (data ?? []).map((p) => ({
+          id: p.id,
+          name: `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim() || "Unnamed",
+          points: p.punctuality_score ?? 0,
+          avatar: p.avatar_url ?? null,
+        }));
+
+      setLeaderboardData(rows);
+
+      setLoading(false);
+    }
+
+    loadLeaderboard();
+    return () => {
+      cancelled = true;
+    };
+  }, [mode]); // re-fetch when you toggle bloopies/ploopies
 
   // smooth toggle effect
   useEffect(() => {
@@ -106,14 +119,16 @@ export default function LeaderboardScreen() {
     ? ['#F7FBF8', '#CBE2D3', '#A1C2A8'] // green
     : ['#FFF5F5', '#F7B6B6', '#F08A8A']; // red
 
-  const filteredData = LEADERBOARD_DATA.filter((entry) =>
+  const filteredData = leaderboardData.filter((entry) =>
     entry.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     entry.handle.toLowerCase().includes(searchQuery.toLowerCase())
   )
+  /* SQL already sorts by points, so we just need to re-sort for ascending/descending toggle. */
   .sort((a, b) => {
     if (mode === 'bloopies') return b.points - a.points; // descending
     return a.points - b.points; // ascending
   });
+
 
   return (
     <LinearGradient
@@ -267,7 +282,6 @@ export default function LeaderboardScreen() {
               >
                 {/* Medal emoji and rank */}
                 <View className="flex-row items-center gap-3">
-                  <Text className="text-xl">🥉</Text>
                   <Text className="text-lg font-semibold text-black">{idx + 1}</Text>
                 </View>
 
