@@ -6,15 +6,12 @@ import * as SplashScreen from "expo-splash-screen";
 import { useFonts, DMSans_400Regular, DMSans_500Medium, DMSans_700Bold } from "@expo-google-fonts/dm-sans";
 import { registerForPushAndSaveToken } from "../../constants/push";
 
-<<<<<<< Updated upstream
+// Tab colors
 const MINT = "#4FD1C5";
 const INACTIVE = "#9CA3AF";
 const BG = "#F7FBF8";
 
-export default function TabsLayout() {
-    useEffect(() => {
-=======
-// Prevent the splash screen from auto-hiding
+// Prevent splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
 
 export default function Layout() {
@@ -27,14 +24,11 @@ export default function Layout() {
 
   // Hide splash when fonts are loaded
   useEffect(() => {
-    if (fontsLoaded) {
-      SplashScreen.hideAsync();
-    }
+    if (fontsLoaded) SplashScreen.hideAsync();
   }, [fontsLoaded]);
 
-  // Push notifications registration
+  // Register push notifications
   useEffect(() => {
->>>>>>> Stashed changes
     registerForPushAndSaveToken().catch((e) => console.log("push init err", e?.message ?? e));
   }, []);
 
@@ -42,55 +36,13 @@ export default function Layout() {
   if (!fontsLoaded) return null;
 
   return (
-<<<<<<< Updated upstream
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-
-        tabBarShowLabel: true,
-        tabBarActiveTintColor: MINT,
-        tabBarInactiveTintColor: INACTIVE,
-
-        tabBarLabelStyle: {
-          fontSize: 11,
-          marginTop: -2,
-          paddingBottom: Platform.OS === "ios" ? 0 : 4,
-        },
-
-        tabBarStyle: {
-          height: Platform.OS === "ios" ? 86 : 66,
-          paddingTop: 8,
-          paddingBottom: Platform.OS === "ios" ? 20 : 8,
-          backgroundColor: BG,
-
-          borderTopWidth: 0,
-          elevation: 0,
-
-          // soft, floating feel
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.05,
-          shadowRadius: 8,
-
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
-        },
-      }}
-    >
-      {/* Use EXACT route names from console */}
-      <Tabs.Screen
-        name="hangs"
-        options={{
-          title: "Hangs",
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? "calendar" : "calendar-outline"} size={size ?? 24} color={color} />
-          ),
-=======
     <View style={{ flex: 1, fontFamily: "DMSans_400Regular" }}>
       <Tabs
         screenOptions={{
           headerShown: false,
           tabBarShowLabel: true,
+          tabBarActiveTintColor: MINT,
+          tabBarInactiveTintColor: INACTIVE,
           tabBarLabelStyle: {
             fontSize: 11,
             marginTop: -2,
@@ -98,12 +50,19 @@ export default function Layout() {
             fontFamily: "DMSans_500Medium", // Medium for tab labels
           },
           tabBarStyle: {
-            height: Platform.OS === "ios" ? 84 : 64,
-            paddingTop: 10,
+            height: Platform.OS === "ios" ? 86 : 66,
+            paddingTop: 8,
+            paddingBottom: Platform.OS === "ios" ? 20 : 8,
+            backgroundColor: BG,
             borderTopWidth: 0,
             elevation: 0,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: -2 },
+            shadowOpacity: 0.05,
+            shadowRadius: 8,
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
           },
->>>>>>> Stashed changes
         }}
       >
         <Tabs.Screen
@@ -116,17 +75,6 @@ export default function Layout() {
           }}
         />
 
-<<<<<<< Updated upstream
-      <Tabs.Screen
-        name="friends"
-        options={{
-          title: "Friends",
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? "people" : "people-outline"} size={size ?? 24} color={color} />
-          ),
-        }}
-      />
-=======
         <Tabs.Screen
           name="friends/index"
           options={{
@@ -136,7 +84,6 @@ export default function Layout() {
             ),
           }}
         />
->>>>>>> Stashed changes
 
         <Tabs.Screen
           name="alerts/index"
@@ -148,26 +95,6 @@ export default function Layout() {
           }}
         />
 
-<<<<<<< Updated upstream
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Profile",
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? "person" : "person-outline"} size={size ?? 24} color={color} />
-          ),
-        }}
-      />
-
-      {/* Hide groups (it is currently being discovered under tabs) */}
-      <Tabs.Screen name="groups/index" options={{ href: null }} />
-      <Tabs.Screen name="groups/[group]" options={{ href: null }} />
-      <Tabs.Screen name="groups/invites" options={{ href: null }} />
-      <Tabs.Screen name="profile/edit" options={{ href: null }} />
-      <Tabs.Screen name="profile/notifications" options={{ href: null }} />
-      <Tabs.Screen name="friends/leaderboard" options={{ href: null }} />
-    </Tabs>
-=======
         <Tabs.Screen
           name="profile/index"
           options={{
@@ -184,8 +111,8 @@ export default function Layout() {
         <Tabs.Screen name="groups/invites" options={{ href: null }} />
         <Tabs.Screen name="profile/edit" options={{ href: null }} />
         <Tabs.Screen name="profile/notifications" options={{ href: null }} />
+        <Tabs.Screen name="friends/leaderboard" options={{ href: null }} />
       </Tabs>
     </View>
->>>>>>> Stashed changes
   );
 }

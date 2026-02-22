@@ -3,11 +3,8 @@ import { View, RNText, Pressable, TextInput } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../../constants/supabase";
-<<<<<<< Updated upstream
 import { setRandomScore } from "../../constants/db";
-=======
 import Text from "@components/ui/Text";
->>>>>>> Stashed changes
 
 export default function Signup() {
   const [email, setEmail] = useState("");
