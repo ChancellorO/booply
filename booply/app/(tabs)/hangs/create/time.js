@@ -1,12 +1,18 @@
 import { useState } from "react";
-import { View, Text, Pressable, TextInput } from "react-native";
+import { View, Text, Pressable, TextInput, Keyboard, TouchableWithoutFeedback } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { Ionicons } from "@expo/vector-icons";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { LinearGradient } from "expo-linear-gradient";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
 import { supabase } from "../../../../constants/supabase";
 import { fmtDateTime } from "../../../../constants/geo";
 
 export default function CreateHangTime() {
+  const insets = useSafeAreaInsets();
+  const gradientColors = ["#A9CBB2", "#CFE6D8", "#F7FBF8"];
+  
   const { meetup_name, meetup_lat, meetup_lng } = useLocalSearchParams();
 
   const [name, setName] = useState("");
@@ -14,6 +20,13 @@ export default function CreateHangTime() {
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const canNext = !!startTime && !loading;
+
+  const cardBlue = "#F3FBFC"; // lighter than #CFEAEC
+  const cardBase = "rounded-3xl p-6 shadow-sm"; // bigger
+
+  const outsideLabel = "px-2 text-sm font-extrabold tracking-widest uppercase text-gray-700";
+  
   const onCreateDraft = async () => {
     if (!startTime || loading) return;
     setLoading(true);
@@ -73,60 +86,115 @@ export default function CreateHangTime() {
   };
 
   return (
-    <View className="flex-1 bg-white">
-      <View className="px-6 pt-14">
-        <View className="flex-row items-center justify-between">
-          <Pressable onPress={() => router.back()} className="h-10 w-10 items-center justify-center">
-            <Ionicons name="arrow-back" size={22} color="#0F172A" />
-          </Pressable>
-          <Text className="text-base font-semibold text-slate-900">Name & time</Text>
-          <View className="h-10 w-10" />
+    <LinearGradient
+      colors={gradientColors}
+      start={{ x: 0.15, y: 0 }}
+      end={{ x: 1, y: 0.85 }}
+      style={{ flex: 1, paddingTop: insets.top }}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View style={{ flex: 1 }}>
+          {/* Header (match map page) */}
+          <View className="px-4 pt-10 pb-4">
+            <View className="flex-row items-center justify-between">
+              <Pressable
+                onPress={() => router.back()}
+                className="bg-white border border-gray-300 rounded-full w-12 h-12 items-center justify-center shadow-sm"
+              >
+                <MaterialIcons name="arrow-back" size={22} color="#374151" />
+              </Pressable>
+
+              <Text className="text-2xl font-bold text-gray-900">Name & time</Text>
+              <View className="w-12 h-12" />
+            </View>
+          </View>
+
+          {/* Content */}
+          <View className="flex-1 px-4">
+            {/* Grouped form container (feels less divided) */}
+            <View className="p-1">
+              {/* Destination (event-style colored bar) */}
+              <Text className={outsideLabel}>Destination</Text>
+              <View className={`mt-2 ${cardBase}`} style={{ backgroundColor: cardBlue }}>
+                <View className="flex-row items-center gap-3">
+                  <MaterialIcons name="place" size={20} color="#334155" />
+                  <Text className="text-lg font-semibold text-gray-800">
+                    {meetup_name ? String(meetup_name) : "Meetup"}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Hang name (event-style colored bar) */}
+              <Text className={`mt-4 ${outsideLabel}`}>Hang name</Text>
+              <View className={`mt-2 ${cardBase}`} style={{ backgroundColor: cardBlue }}>
+                <View className="flex-row items-center gap-3">
+                  <MaterialIcons name="edit" size={20} color="#334155" />
+                  <Text className="text-lg font-semibold text-gray-800">Name it</Text>
+                </View>
+
+                <View
+                  className="mt-4 bg-white/85 rounded-2xl px-4"
+                  style={{ height: 52, justifyContent: "center" }}
+                >
+                  <TextInput
+                    value={name}
+                    onChangeText={setName}
+                    placeholder="e.g. Taco Tuesday 🌮"
+                    placeholderTextColor="#6b7280"
+                    returnKeyType="done"
+                    style={{ fontSize: 18, paddingVertical: 0, color: "#111827", fontWeight: "700" }}
+                  />
+                </View>
+              </View>
+
+              {/* Start time (event-style colored bar) */}
+              <Text className={`mt-4 ${outsideLabel}`}>Start time</Text>
+              <Pressable
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setShow(true);
+                }}
+                className={`mt-2 ${cardBase}`}
+                style={{ backgroundColor: cardBlue }}
+              >
+                <View className="flex-row items-center gap-3">
+                  <MaterialIcons name="schedule" size={20} color="#334155" />
+                  <Text className="text-lg font-semibold text-gray-800">
+                    {startTime ? fmtDateTime(startTime) : "Tap to pick"}
+                  </Text>
+                </View>
+              </Pressable>
+
+              <DateTimePickerModal
+                isVisible={show}
+                mode="datetime"
+                onConfirm={(d) => {
+                  setShow(false);
+                  setStartTime(d);
+                }}
+                onCancel={() => setShow(false)}
+              />
+
+              {/* Next button (kept your style, but placed inside the group so it feels cohesive) */}
+              <Pressable
+                disabled={!canNext}
+                onPress={onCreateDraft}
+                className={`mt-4 rounded-2xl px-5 py-3.5 border ${
+                  canNext ? "bg-white border-emerald-300" : "bg-gray-200 border-gray-300"
+                }`}
+              >
+                <Text
+                  className={`text-center text-base font-bold ${
+                    canNext ? "text-emerald-700" : "text-gray-500"
+                  }`}
+                >
+                  {loading ? "Saving..." : "Next"}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
         </View>
-
-        <Text className="mt-4 text-2xl font-extrabold text-slate-900">Almost there</Text>
-        <Text className="mt-1 text-sm text-slate-600">Give it a name and choose a start time.</Text>
-
-        <View className="mt-6 rounded-3xl bg-white/70 px-5 py-5 border border-zinc-200">
-          <Text className="text-xs font-semibold text-slate-500">Hang name</Text>
-          <TextInput
-            value={name}
-            onChangeText={setName}
-            placeholder="e.g. Taco Tuesday 🌮"
-            placeholderTextColor="#94A3B8"
-            className="mt-2 text-lg font-semibold text-slate-900"
-          />
-        </View>
-
-        <Pressable
-          onPress={() => setShow(true)}
-          className="mt-4 rounded-3xl bg-white/70 px-5 py-5 border border-zinc-200"
-        >
-          <Text className="text-xs font-semibold text-slate-500">Start time</Text>
-          <Text className="mt-2 text-lg font-semibold text-slate-900">
-            {startTime ? fmtDateTime(startTime) : "Tap to pick"}
-          </Text>
-        </Pressable>
-
-        <DateTimePickerModal
-          isVisible={show}
-          mode="datetime"
-          onConfirm={(d) => {
-            setShow(false);
-            setStartTime(d);
-          }}
-          onCancel={() => setShow(false)}
-        />
-
-        <Pressable
-          className={`mt-6 rounded-2xl px-5 py-4 ${startTime ? "bg-zinc-900" : "bg-zinc-300"}`}
-          disabled={!startTime || loading}
-          onPress={onCreateDraft}
-        >
-          <Text className="text-center text-base font-semibold text-white">
-            {loading ? "Saving..." : "Next"}
-          </Text>
-        </Pressable>
-      </View>
-    </View>
+      </TouchableWithoutFeedback>
+    </LinearGradient>
   );
 }

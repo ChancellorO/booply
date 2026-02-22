@@ -43,7 +43,7 @@ function AvatarGroup({ count = 2 }) {
 export default function CreateHang() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const gradientColors = ["#F7FBF8", "#CBE2D3", "#A1C2A8"];
+  const gradientColors = ["#A9CBB2", "#CFE6D8", "#F7FBF8"];
 
   const [groups, setGroups] = useState([]);
   const [memberCounts, setMemberCounts] = useState({}); // { [groupId]: number }
@@ -203,10 +203,6 @@ export default function CreateHang() {
           </Animated.View>
         </View>
           <View className="flex-row gap-3">
-            {/*<Pressable className="bg-white border border-gray-300 rounded-full w-12 h-12 items-center justify-center shadow-sm">
-              <MaterialIcons name="search" size={24} color="#374151" />
-            </Pressable>*/}
-
             <Pressable
               onPress={() => {
                 if (!searchOpen) {
@@ -335,9 +331,9 @@ export default function CreateHang() {
       {/* FAB Button */}
       <Pressable
         onPress={() => router.push("/(tabs)/hangs/create/place")}
-        className="absolute bottom-12 right-5 bg-cyan-200 border border-cyan-300 rounded-full w-16 h-16 items-center justify-center shadow-lg"
+        className="absolute bottom-12 right-5 bg-[#CFEAEC] border border-cyan-200 rounded-full w-16 h-16 items-center justify-center shadow-lg"
       >
-        <MaterialIcons name="add" size={32} color="#4b7f6b" />
+        <MaterialIcons name="add" size={32} color="#334155" />
       </Pressable>
     </LinearGradient>
   );

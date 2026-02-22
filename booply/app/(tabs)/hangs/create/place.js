@@ -9,7 +9,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function CreateHangPlace() {
   const insets = useSafeAreaInsets();
-  const gradientColors = ["#F7FBF8", "#CBE2D3", "#A1C2A8"];
+  const gradientColors = ["#A9CBB2", "#CFE6D8", "#F7FBF8"];
+  const cardBlue = "#F3FBFC";
   
   const [initialRegion, setInitialRegion] = useState(null);
   const [pickedCoord, setPickedCoord] = useState(null); // { lat, lng }
@@ -112,7 +113,7 @@ export default function CreateHangPlace() {
                 className="bg-white border border-gray-300 rounded-full w-12 h-12 items-center justify-center shadow-sm">
                 <MaterialIcons name="arrow-back" size={22} color="#374151" />
               </Pressable>
-              <Text className="text-lg font-bold text-gray-900">Pick a place</Text>
+              <Text className="text-2xl font-bold text-gray-900">Pick a place</Text>
               <View className="w-12 h-12" />
             </View>
           </View>
@@ -141,13 +142,16 @@ export default function CreateHangPlace() {
                 {pickedCoord ? (
                   <Marker 
                     coordinate={{ latitude: pickedCoord.lat, longitude: pickedCoord.lng }} 
-                    pinColor="#4b7f6b"/>
+                    pinColor="#8CBDB8"/>
                 ) : null}
               </MapView>
             </View>
 
             {/* Bottom card */}
-            <View className="mt-3 bg-white/70 border border-gray-200 rounded-3xl p-4 shadow-sm">
+            <View 
+              className="mt-3 rounded-3xl p-4 shadow-sm"
+              style={{ backgroundColor: cardBlue }}
+            >
               <Text className="text-xs font-bold text-blue-900 tracking-wider uppercase">Selected</Text>
               <Text className="mt-2 text-base font-semibold text-gray-800">
                 {pickedName ? pickedName : "Tap the map to choose"}
