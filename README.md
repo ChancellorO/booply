@@ -18,3 +18,8 @@ Managing time is hard. Whether you’re heading out alone or meeting friends, pe
 * Verification check using location
 * Realtime update
 * Stats updates profiles and leaderboard
+
+# re-clone steps
+* git init 
+* git remote set-url origin github-url
+* git status

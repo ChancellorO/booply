@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, Text, View, ScrollView, Image, StyleSheet, TextInput, Keyboard } from "react-native";
+import { Pressable, Text, View, ScrollView, Image, StyleSheet, TextInput, Keyboard, Animated, Easing } from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -52,6 +52,17 @@ export default function CreateHang() {
   const [query, setQuery] = useState("");
 
   const [kbHeight, setKbHeight] = useState(0);
+
+  const searchAnim = useState(new Animated.Value(0))[0]; // 0=title, 1=search
+
+  useEffect(() => {
+    Animated.timing(searchAnim, {
+      toValue: searchOpen ? 1 : 0,
+      duration: 180,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [searchOpen, searchAnim]);
 
   useEffect(() => {
     const show = Keyboard.addListener("keyboardWillShow", (e) =>
@@ -138,11 +149,45 @@ export default function CreateHang() {
       {/* Header */}
       <View className="px-4 pt-10 pb-4">
         <View className="flex-row items-center justify-between">
-          {!searchOpen ? (
-          <Text className="text-3xl font-bold text-gray-900">Create Hang</Text>
-          ) : (
+          <View style={{ flex: 1, marginRight: 12, height: 48, justifyContent: "center" }}>
+          {/* Title */}
+          <Animated.View
+            pointerEvents={searchOpen ? "none" : "auto"}
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              opacity: searchAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }),
+              transform: [
+                {
+                  translateY: searchAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, -6],
+                  }),
+                },
+              ],
+            }}
+          >
+            <Text className="text-3xl font-bold text-gray-900">Create Hang</Text>
+          </Animated.View>
+
+          {/* Search */}
+          <Animated.View
+            pointerEvents={searchOpen ? "auto" : "none"}
+            style={{
+              opacity: searchAnim,
+              transform: [
+                {
+                  translateY: searchAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [6, 0],
+                  }),
+                },
+              ],
+            }}
+          >
             <View
-              className="flex-1 mr-3 bg-white border border-gray-300 rounded-full px-4 shadow-sm"
+              className="bg-white border border-gray-300 rounded-full px-4 shadow-sm"
               style={{ height: 48, justifyContent: "center" }}
             >
               <TextInput
@@ -150,12 +195,13 @@ export default function CreateHang() {
                 onChangeText={setQuery}
                 placeholder="Search hangs..."
                 placeholderTextColor="#6b7280"
-                autoFocus
+                autoFocus={searchOpen}
                 returnKeyType="search"
                 style={{ fontSize: 16, paddingVertical: 0, color: "#111827" }}
               />
             </View>
-          )}
+          </Animated.View>
+        </View>
           <View className="flex-row gap-3">
             {/*<Pressable className="bg-white border border-gray-300 rounded-full w-12 h-12 items-center justify-center shadow-sm">
               <MaterialIcons name="search" size={24} color="#374151" />
