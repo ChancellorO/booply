@@ -1,5 +1,11 @@
+<<<<<<< Updated upstream
 import { useEffect, useState, useRef } from "react";
 import { View, Text, Pressable, ScrollView, Animated, Easing } from "react-native";
+=======
+import { useEffect, useState } from "react";
+import { View, RNText, Pressable, ScrollView } from "react-native";
+import Text from "@components/ui/Text";
+>>>>>>> Stashed changes
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";

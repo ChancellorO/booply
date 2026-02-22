@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+const { fontFamily } = require("tailwindcss/defaultTheme");
+
 module.exports = {
   content: [
     "./app/**/*.{js,jsx}",
@@ -8,7 +10,13 @@ module.exports = {
   ],
   presets: [require("nativewind/preset")],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: { 
+        sans: ["DMSans_400Regular", ...fontFamily.sans],
+        medium: ["DMSans_500Medium", ...fontFamily.sans],
+        bold: ["DMSans_700Bold", ...fontFamily.sans],
+      }
+    },
   },
   plugins: [],
 };

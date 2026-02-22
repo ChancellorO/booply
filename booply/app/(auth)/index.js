@@ -1,6 +1,7 @@
-import { View, Text, Image, Pressable } from "react-native";
+import { View, RNText, Image, Pressable } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
+import Text from "@components/ui/Text";
 
 export default function Landing() {
   return (

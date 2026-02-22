@@ -1,8 +1,9 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, RNText, View } from "react-native";
 import { Screen, Title } from "../../components/ui";
-import { supabase } from "../../constants/supabase";
+import { supabase } from "../../constants/supabase"; 
+import Text from "@components/ui/Text";
 
 export default function Home() {
   const [profile, setProfile] = useState(null);

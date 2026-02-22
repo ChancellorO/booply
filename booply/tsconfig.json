@@ -3,9 +3,8 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"],
+      "@components/*": ["components/*"]
     }
   },
   "include": [
@@ -16,6 +15,6 @@
     "hooks/useSession.js",
     "nativewind-env.d.ts", 
     "app/(tabs)/groups.js", 
-    "app/(tabs)/leaderboard.js"  
+    "app/(tabs)/leaderboard.js"
   ]
 }

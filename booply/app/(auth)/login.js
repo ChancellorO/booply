@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { View, Text, Pressable, TextInput } from "react-native";
+import { View, RNText, Pressable, TextInput } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { supabase } from "../../constants/supabase";
+import { supabase } from "../../constants/supabase"; 
+import Text from "@components/ui/Text";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -109,7 +110,7 @@ export default function Login() {
       <View className="mt-auto items-center pb-10">
         <Text className="text-xs text-zinc-500">
           New to Booply?{" "}
-          <Text className="font-semibold text-indigo-600" onPress={() => router.replace("/(auth)/signup")}>
+          <Text className="font-bold text-xl" onPress={() => router.replace("/(auth)/signup")}>
             Create an account
           </Text>
         </Text>

@@ -1,6 +1,7 @@
-import {  View,Text, Image, Pressable, ScrollView, StyleSheet, StatusBar,} from "react-native";
+import { RNText, View, Image, Pressable, ScrollView, StyleSheet, StatusBar,} from "react-native";
   import { useRouter } from "expo-router";
   import { Ionicons } from "@expo/vector-icons";
+  import Text from "@components/ui/Text";
   
   const BLACK = "#18181b";
   const GREEN = "#16a34a";
