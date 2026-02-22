@@ -1,36 +1,34 @@
-import { LinearGradient } from 'expo-linear-gradient';
-import { useEffect, useRef, useState } from 'react';
-import { Animated, Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+// app/(tabs)/friends/leaderboard.js  (DROP-IN REPLACEMENT)
+
+import { LinearGradient } from "expo-linear-gradient";
+import { useEffect, useRef, useState, useMemo } from "react";
+import { Animated, Image, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { router } from "expo-router";
 import { supabase } from "../../../constants/supabase";
 
+const fallbackAvatar = require("../../../assets/images/dumbways.png");
 
-// Mock leaderboard data
-/*{
-    rank: 4,
-    id: '1',
-    name: 'Stephen',
-    handle: 'stephen965107',
-    points: 4570,
-    avatar: 'https://i.pravatar.cc/150?img=1',
-  }, */
+function safeHandleFromProfile(p) {
+  const email = p?.email ?? "";
+  if (email.includes("@")) return email.split("@")[0];
+  return (p?.id ?? "user").slice(0, 10);
+}
 
 export default function LeaderboardScreen() {
   const insets = useSafeAreaInsets();
-  const [ leaderboardData, setLeaderboardData ] = useState([]);
+  const [leaderboardData, setLeaderboardData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
 
-  const [filter, setFilter] = useState('weekly');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [filter, setFilter] = useState("weekly"); // kept for UI
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const [mode, setMode] = useState('bloopies'); // 'bloopies' | 'ploopies'
-  const isAscending = mode === 'bloopies';
+  const [mode, setMode] = useState("bloopies"); // 'bloopies' | 'ploopies'
+  const isAscending = mode === "bloopies";
 
-  const anim = useRef(new Animated.Value(mode === 'bloopies' ? 0 : 1)).current;
+  const anim = useRef(new Animated.Value(mode === "bloopies" ? 0 : 1)).current;
 
   useEffect(() => {
     let cancelled = false;
@@ -42,7 +40,7 @@ export default function LeaderboardScreen() {
       const { data, error } = await supabase
         .from("profiles")
         .select("id, first_name, last_name, email, avatar_url, punctuality_score")
-        .order("punctuality_score", { ascending: isAscending }) // bloopies high->low, ploopies low->high
+        .order("punctuality_score", { ascending: isAscending })
         .limit(100);
 
       if (cancelled) return;
@@ -54,16 +52,15 @@ export default function LeaderboardScreen() {
         return;
       }
 
-      const rows  =
-        (data ?? []).map((p) => ({
-          id: p.id,
-          name: `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim() || "Unnamed",
-          points: p.punctuality_score ?? 0,
-          avatar: p.avatar_url ?? null,
-        }));
+      const rows = (data ?? []).map((p) => ({
+        id: p.id,
+        name: `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim() || "Unnamed",
+        handle: safeHandleFromProfile(p),
+        points: p.punctuality_score ?? 0,
+        avatar: p.avatar_url ?? null,
+      }));
 
       setLeaderboardData(rows);
-
       setLoading(false);
     }
 
@@ -71,32 +68,28 @@ export default function LeaderboardScreen() {
     return () => {
       cancelled = true;
     };
-  }, [mode]); // re-fetch when you toggle bloopies/ploopies
+  }, [mode, isAscending]);
 
-  // smooth toggle effect
   useEffect(() => {
     Animated.timing(anim, {
-      toValue: mode === 'bloopies' ? 0 : 1,
+      toValue: mode === "bloopies" ? 0 : 1,
       duration: 180,
-      useNativeDriver: false, // needed for color interpolation
+      useNativeDriver: false,
     }).start();
   }, [mode, anim]);
 
   const trackColor = anim.interpolate({
     inputRange: [0, 1],
-    outputRange: ['#0d9488', '#ef4444'], // teal -> red
+    outputRange: ["#0d9488", "#ef4444"],
   });
 
   const knobTranslateX = anim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 22], // knob travel distance
+    outputRange: [0, 22],
   });
 
-  const activeChipBg = mode === 'bloopies' ? 'bg-teal-600' : 'bg-red-500';
-  const activeChipText = 'text-white';
-
-  const PERIODS = ['weekly', 'daily', 'monthly'];
-  const periodIndex = PERIODS.indexOf(filter); // 0/1/2
+  const PERIODS = ["weekly", "daily", "monthly"];
+  const periodIndex = PERIODS.indexOf(filter);
   const periodAnim = useRef(new Animated.Value(periodIndex)).current;
   const [segWidth, setSegWidth] = useState(0);
 
@@ -104,32 +97,30 @@ export default function LeaderboardScreen() {
     Animated.timing(periodAnim, {
       toValue: periodIndex,
       duration: 180,
-      useNativeDriver: true, // translateX only
+      useNativeDriver: true,
     }).start();
   }, [periodIndex, periodAnim]);
 
   const thumbTranslateX = periodAnim.interpolate({
-  inputRange: [0, 1, 2],
-  outputRange: [0, segWidth, segWidth * 2],
+    inputRange: [0, 1, 2],
+    outputRange: [0, segWidth, segWidth * 2],
   });
 
-  const activeHex = mode === 'bloopies' ? '#0d9488' : '#ef4444';
+  const activeHex = mode === "bloopies" ? "#0d9488" : "#ef4444";
 
-  const gradientColors = mode === 'bloopies'
-    ? ['#F7FBF8', '#CBE2D3', '#A1C2A8'] // green
-    : ['#FFF5F5', '#F7B6B6', '#F08A8A']; // red
+  const gradientColors =
+    mode === "bloopies"
+      ? ["#F7FBF8", "#CBE2D3", "#A1C2A8"]
+      : ["#FFF5F5", "#F7B6B6", "#F08A8A"];
 
-  const filteredData = leaderboardData.filter((entry) =>
-    entry.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    entry.handle.toLowerCase().includes(searchQuery.toLowerCase())
-  )
-  /* SQL already sorts by points, so we just need to re-sort for ascending/descending toggle. 
-  .sort((a, b) => {
-    if (mode === 'bloopies') return b.points - a.points; // descending
-    return a.points - b.points; // ascending
-  });
-  */
-
+  const filteredData = useMemo(() => {
+    const q = (searchQuery ?? "").toLowerCase();
+    return (leaderboardData ?? []).filter((entry) => {
+      const name = (entry.name ?? "").toLowerCase();
+      const handle = (entry.handle ?? "").toLowerCase();
+      return name.includes(q) || handle.includes(q);
+    });
+  }, [leaderboardData, searchQuery]);
 
   return (
     <LinearGradient
@@ -138,167 +129,162 @@ export default function LeaderboardScreen() {
       end={{ x: 1, y: 0.85 }}
       style={{ flex: 1, paddingTop: insets.top }}
     >
-
-    {/* Header */}
-    <View className="px-4 pt-10 pb-4">
-      <View className="flex-row items-center justify-between">
-        {/* Left: Back + Title */}
-        <View className="flex-row items-start gap-3 flex-1">
+      {/* Header */}
+      <View className="px-4 pt-10 pb-4">
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-start gap-3 flex-1">
             <Pressable
-            onPress={() => router.back()}
-            className="w-10 h-10 rounded-full bg-white/70 border border-white/60 items-center justify-center"
-            style={{
+              onPress={() => router.back()}
+              className="w-10 h-10 rounded-full bg-white/70 border border-white/60 items-center justify-center"
+              style={{
                 shadowColor: "#000",
                 shadowOpacity: 0.08,
                 shadowRadius: 10,
                 shadowOffset: { width: 0, height: 6 },
                 elevation: 2,
-            }}
-            hitSlop={10}
+              }}
+              hitSlop={10}
             >
-            <MaterialIcons name="chevron-left" size={22} color="#0f172a" />
+              <MaterialIcons name="chevron-left" size={22} color="#0f172a" />
             </Pressable>
 
             <View>
-            <Text className="text-5xl font-bold text-black tracking-tight">
+              <Text className="text-5xl font-bold text-black tracking-tight">
                 {mode === "bloopies" ? "Bloopies" : "Ploopies"}
-            </Text>
-            <Text className="text-base text-gray-800 mt-2">Leaderboard</Text>
+              </Text>
+              <Text className="text-base text-gray-800 mt-2">Leaderboard</Text>
             </View>
-        </View>
+          </View>
 
-        {/* Right: Wi-Fi style toggle */}
-        <Pressable
-            onPress={() => setMode(mode === "bloopies" ? "ploopies" : "bloopies")}
-            style={{ paddingLeft: 8 }}
-        >
+          <Pressable onPress={() => setMode(mode === "bloopies" ? "ploopies" : "bloopies")} style={{ paddingLeft: 8 }}>
             <Animated.View
-            style={{
+              style={{
                 width: 52,
                 height: 30,
                 borderRadius: 999,
                 padding: 3,
                 justifyContent: "center",
                 backgroundColor: trackColor,
-            }}
+              }}
             >
-            <Animated.View
+              <Animated.View
                 style={{
-                width: 24,
-                height: 24,
-                borderRadius: 999,
-                backgroundColor: "white",
-                transform: [{ translateX: knobTranslateX }],
+                  width: 24,
+                  height: 24,
+                  borderRadius: 999,
+                  backgroundColor: "white",
+                  transform: [{ translateX: knobTranslateX }],
                 }}
-            />
+              />
             </Animated.View>
-        </Pressable>
-     </View>
-    </View>
-
-    {/* Segmented Period Control (animated) */}
-    <View className="px-4 pb-4">
-      <View
-        onLayout={(e) => {
-          const w = e.nativeEvent.layout.width;
-          setSegWidth(w / 3);
-        }}
-        style={{
-          height: 44,
-          borderRadius: 999,
-          backgroundColor: 'rgba(255,255,255,0.75)',
-          borderColor: 'rgba(0,0,0,0.08)',
-          borderWidth: 1,
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
-        {/* sliding thumb */}
-        <Animated.View
-          style={{
-            position: 'absolute',
-            top: 2,
-            left: 2,
-            width: Math.max(0, segWidth - 4),
-            height: 40,
-            borderRadius: 999,
-            transform: [{ translateX: thumbTranslateX }],
-            backgroundColor: activeHex,
-          }}
-        />
-
-        {/* labels */}
-        <View style={{ flexDirection: 'row', height: '100%' }}>
-          {PERIODS.map((period) => {
-            const selected = filter === period;
-            return (
-              <Pressable
-                key={period}
-                onPress={() => setFilter(period)}
-                style={{
-                  flex: 1,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Text style={{ fontWeight: '600', color: selected ? 'white' : 'black' }}>
-                  {period.charAt(0).toUpperCase() + period.slice(1)}
-                </Text>
-              </Pressable>
-            );
-          })}
+          </Pressable>
         </View>
       </View>
-    </View>
 
-    {/* Search bar */}
-    <View className="px-4 pb-4">
-      <View className="flex-row items-center bg-white border border-gray-300 rounded-full px-4 py-3">
-        <Text className="text-2xl text-gray-400 mr-2">🔍</Text>
-        <TextInput
-          placeholder="Search"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          className="flex-1 text-base text-black"
-          placeholderTextColor="#9f8f8f"
-        />
+      {/* Segmented Period Control */}
+      <View className="px-4 pb-4">
+        <View
+          onLayout={(e) => {
+            const w = e.nativeEvent.layout.width;
+            setSegWidth(w / 3);
+          }}
+          style={{
+            height: 44,
+            borderRadius: 999,
+            backgroundColor: "rgba(255,255,255,0.75)",
+            borderColor: "rgba(0,0,0,0.08)",
+            borderWidth: 1,
+            position: "relative",
+            overflow: "hidden",
+          }}
+        >
+          <Animated.View
+            style={{
+              position: "absolute",
+              top: 2,
+              left: 2,
+              width: Math.max(0, segWidth - 4),
+              height: 40,
+              borderRadius: 999,
+              transform: [{ translateX: thumbTranslateX }],
+              backgroundColor: activeHex,
+            }}
+          />
+
+          <View style={{ flexDirection: "row", height: "100%" }}>
+            {PERIODS.map((period) => {
+              const selected = filter === period;
+              return (
+                <Pressable
+                  key={period}
+                  onPress={() => setFilter(period)}
+                  style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+                >
+                  <Text style={{ fontWeight: "600", color: selected ? "white" : "black" }}>
+                    {period.charAt(0).toUpperCase() + period.slice(1)}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
       </View>
-    </View>
+
+      {/* Search bar */}
+      <View className="px-4 pb-4">
+        <View className="flex-row items-center bg-white border border-gray-300 rounded-full px-4 py-3">
+          <Text className="text-2xl text-gray-400 mr-2">🔍</Text>
+          <TextInput
+            placeholder="Search"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            className="flex-1 text-base text-black"
+            placeholderTextColor="#9f8f8f"
+          />
+        </View>
+      </View>
 
       <ScrollView
-          className="flex-1"
-          style={{ backgroundColor: 'transparent' }}
-          contentContainerStyle={{ paddingBottom: 96 + 72 + insets.bottom }}
-          keyboardDismissMode="on-drag"
-          keyboardShouldPersistTaps="handled"
-        >
-
-        {/* Leaderboard entries */}
+        className="flex-1"
+        style={{ backgroundColor: "transparent" }}
+        contentContainerStyle={{ paddingBottom: 96 + 72 + insets.bottom }}
+        keyboardDismissMode="on-drag"
+        keyboardShouldPersistTaps="handled"
+      >
         <View className="px-4 pb-8">
+          {error ? (
+            <View className="bg-white/70 border border-gray-200 rounded-2xl p-4 mb-3">
+              <Text className="text-sm text-red-600 font-semibold">{error}</Text>
+            </View>
+          ) : null}
+
+          {loading ? (
+            <View className="bg-white/70 border border-gray-200 rounded-2xl p-4 mb-3">
+              <Text className="text-sm text-gray-700">Loading…</Text>
+            </View>
+          ) : null}
+
           <View className="gap-2">
             {filteredData.map((entry, idx) => (
               <View
                 key={entry.id}
                 className="flex-row items-center justify-between bg-white border border-gray-300 rounded-lg p-3"
               >
-                {/* Medal emoji and rank */}
                 <View className="flex-row items-center gap-3">
                   <Text className="text-lg font-semibold text-black">{idx + 1}</Text>
                 </View>
 
-                {/* Avatar, name, and handle */}
                 <View className="flex-1 flex-row items-center gap-3 ml-2">
                   <Image
-                    source={{ uri: entry.avatar }}
-                    className="w-14 h-14 rounded-full"
+                    source={entry.avatar ? { uri: entry.avatar } : fallbackAvatar}
+                    style={{ width: 56, height: 56, borderRadius: 999, backgroundColor: "rgba(0,0,0,0.03)" }}
                   />
                   <View className="flex-1">
                     <Text className="text-base font-semibold text-black">{entry.name}</Text>
-                    <Text className="text-sm text-gray-600">{entry.handle}</Text>
+                    <Text className="text-sm text-gray-600">@{entry.handle}</Text>
                   </View>
                 </View>
 
-                {/* Points */}
                 <Text className="text-base text-gray-600 font-medium">{entry.points}</Text>
               </View>
             ))}

@@ -521,3 +521,84 @@ export async function notifyGroupSimple(groupId, title, body, data = {}) {
   // 3) send push
   await sendPushNotifications(tokens, title, body, data);
 }
+
+export async function applyPunctualityResult({
+  userId,
+  meetupId, // or hangId
+  result,
+}) {
+  if (!userId) throw new Error("applyPunctualityResult: missing userId");
+  if (!result) throw new Error("applyPunctualityResult: missing result");
+
+  // 1) Load current streak + best + counts so we can update deterministically
+  const { data: p, error: pErr } = await supabase
+    .from("profiles")
+    .select("punctuality_streak, best_punctuality_streak, on_time_count, late_count, last_scored_meetup_id")
+    .eq("id", userId)
+    .single();
+
+  if (pErr) throw pErr;
+
+  // OPTIONAL: guard against double-scoring same meetup
+  if (meetupId && p?.last_scored_meetup_id && p.last_scored_meetup_id === meetupId) {
+    return { ok: true, skipped: true, reason: "already_scored" };
+  }
+
+  const currStreak = Number.isFinite(p?.punctuality_streak) ? p.punctuality_streak : 0;
+  const bestStreak = Number.isFinite(p?.best_punctuality_streak) ? p.best_punctuality_streak : 0;
+  const onTimeCount = Number.isFinite(p?.on_time_count) ? p.on_time_count : 0;
+  const lateCount = Number.isFinite(p?.late_count) ? p.late_count : 0;
+
+  const normalized = String(result).toLowerCase();
+
+  const isOnTime = normalized === "on_time" || normalized === "on-time";
+  const isLate = normalized === "late";
+
+  // Hackathon rule: treat "early" as on_time if you want
+  const isEarly = normalized === "early";
+  const countsAsOnTime = isOnTime || isEarly;
+
+  let newStreak = currStreak;
+  let newBest = bestStreak;
+  let newOnTimeCount = onTimeCount;
+  let newLateCount = lateCount;
+
+  if (countsAsOnTime) {
+    newStreak = currStreak + 1;
+    newBest = Math.max(bestStreak, newStreak);
+    newOnTimeCount = onTimeCount + 1;
+  } else if (isLate) {
+    newStreak = 0;
+    newLateCount = lateCount + 1;
+  } else {
+    // If you add other statuses later, decide behavior here.
+    // For now: do nothing.
+  }
+
+  // Optional “score” derived from reliability percent (simple + stable)
+  const total = newOnTimeCount + newLateCount;
+  const punctuality_score = total ? Math.round(100 * (newOnTimeCount + 2) / (total + 4)) : 0;
+
+  const update = {
+    punctuality_streak: newStreak,
+    best_punctuality_streak: newBest,
+    last_punctuality_result: normalized,
+    last_punctuality_at: new Date().toISOString(),
+    on_time_count: newOnTimeCount,
+    late_count: newLateCount,
+    punctuality_score,
+  };
+
+  if (meetupId) update.last_scored_meetup_id = meetupId;
+
+  const { data: updated, error: upErr } = await supabase
+    .from("profiles")
+    .update(update)
+    .eq("id", userId)
+    .select()
+    .single();
+
+  if (upErr) throw upErr;
+
+  return { ok: true, profile: updated };
+}

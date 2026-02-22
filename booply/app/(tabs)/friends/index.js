@@ -1,6 +1,7 @@
-// app/(tabs)/friends/index.js
-import { useEffect, useState } from "react";
-import { Pressable, Text, View, ScrollView } from "react-native";
+// app/(tabs)/friends/index.js  (DROP-IN REPLACEMENT)
+
+import { useEffect, useMemo, useState } from "react";
+import { Pressable, Text, View, ScrollView, Image } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -15,6 +16,23 @@ import {
   listMyFriends,
   getMe,
 } from "../../../constants/db";
+import { supabase } from "../../../constants/supabase";
+
+const fallbackAvatar = require("../../../assets/images/dumbways.png");
+
+function Avatar({ uri, size = 42 }) {
+  return (
+    <Image
+      source={uri ? { uri } : fallbackAvatar}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: 999,
+        backgroundColor: "rgba(255,255,255,0.6)",
+      }}
+    />
+  );
+}
 
 export default function Friends() {
   const insets = useSafeAreaInsets();
@@ -23,17 +41,54 @@ export default function Friends() {
   const [email, setEmail] = useState("");
   const [err, setErr] = useState("");
   const [info, setInfo] = useState("");
-  const [incoming, setIncoming] = useState([]);
-  const [friends, setFriends] = useState([]);
+
+  const [incomingRaw, setIncomingRaw] = useState([]); // original rows
+  const [friendsRaw, setFriendsRaw] = useState([]); // original rows
+
+  const [profilesById, setProfilesById] = useState({}); // { [userId]: { first_name, last_name, email, avatar_url } }
 
   const refresh = async () => {
     try {
       const reqs = await listIncomingRequests();
-      setIncoming(reqs);
       const f = await listMyFriends();
-      setFriends(f);
+
+      setIncomingRaw(reqs || []);
+      setFriendsRaw(f || []);
+
+      // Build a set of all user IDs we need avatars for.
+      const ids = new Set();
+
+      // incoming requests: your db function likely returns from_user as an id (or email).
+      // We'll treat it as an id if it looks like a uuid-ish string.
+      for (const r of reqs || []) {
+        if (typeof r?.from_user === "string" && r.from_user.length >= 8) ids.add(r.from_user);
+      }
+
+      // friends: these are profiles already in many setups, but we’ll still enrich if needed
+      for (const fr of f || []) {
+        if (typeof fr?.id === "string") ids.add(fr.id);
+      }
+
+      if (ids.size === 0) {
+        setProfilesById({});
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, first_name, last_name, email, avatar_url")
+        .in("id", Array.from(ids));
+
+      if (error) {
+        console.log("profiles fetch err:", error.message);
+        return;
+      }
+
+      const map = {};
+      for (const p of data || []) map[p.id] = p;
+      setProfilesById(map);
     } catch (e) {
-      console.log(e.message);
+      console.log(e?.message ?? e);
     }
   };
 
@@ -56,9 +111,35 @@ export default function Friends() {
       setEmail("");
       await refresh();
     } catch (e) {
-      setErr(e.message);
+      setErr(e?.message ?? String(e));
     }
   };
+
+  const incoming = useMemo(() => {
+    return (incomingRaw || []).map((r) => {
+      const p = profilesById?.[r?.from_user];
+      const name = p ? `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim() : null;
+      return {
+        ...r,
+        _fromProfile: p || null,
+        _fromName: name || r?.from_user || "Unknown",
+      };
+    });
+  }, [incomingRaw, profilesById]);
+
+  const friends = useMemo(() => {
+    return (friendsRaw || []).map((f) => {
+      // if your listMyFriends already returns avatar_url, keep it; otherwise prefer profilesById
+      const p = profilesById?.[f?.id] || null;
+      return {
+        ...f,
+        avatar_url: f?.avatar_url ?? p?.avatar_url ?? null,
+        first_name: f?.first_name ?? p?.first_name ?? "",
+        last_name: f?.last_name ?? p?.last_name ?? "",
+        email: f?.email ?? p?.email ?? "",
+      };
+    });
+  }, [friendsRaw, profilesById]);
 
   return (
     <LinearGradient
@@ -91,9 +172,7 @@ export default function Friends() {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingBottom: 140 + insets.bottom,
-        }}
+        contentContainerStyle={{ paddingBottom: 140 + insets.bottom }}
         className="flex-1"
       >
         {/* Add Friend Section */}
@@ -113,16 +192,10 @@ export default function Friends() {
 
             <ErrorText>{err}</ErrorText>
 
-            {info ? (
-              <Text className="mt-2 text-sm text-emerald-600">{info}</Text>
-            ) : null}
+            {info ? <Text className="mt-2 text-sm text-emerald-600">{info}</Text> : null}
 
             <View className="mt-4">
-              <PrimaryButton
-                title="Send request"
-                onPress={onAdd}
-                disabled={!email.trim()}
-              />
+              <PrimaryButton title="Send request" onPress={onAdd} disabled={!email.trim()} />
             </View>
           </View>
         </View>
@@ -136,9 +209,7 @@ export default function Friends() {
           <View className="gap-3">
             {incoming.length === 0 ? (
               <View className="bg-white/70 border border-gray-200 rounded-3xl p-5 shadow-sm">
-                <Text className="text-sm text-gray-600">
-                  No friend requests yet.
-                </Text>
+                <Text className="text-sm text-gray-600">No friend requests yet.</Text>
               </View>
             ) : (
               incoming.map((r) => (
@@ -151,26 +222,14 @@ export default function Friends() {
                   className="bg-[#CFEAEC] border border-cyan-200 rounded-3xl p-5 flex-row items-center justify-between shadow-sm"
                 >
                   <View className="flex-row items-center gap-3 flex-1">
-                    <MaterialIcons
-                      name="person-add"
-                      size={20}
-                      color="#334155"
-                    />
+                    <Avatar uri={r?._fromProfile?.avatar_url} size={44} />
                     <View className="flex-1">
-                      <Text className="text-lg font-bold text-gray-700">
-                        Accept Request
-                      </Text>
-                      <Text className="text-xs text-gray-500">
-                        From: {r.from_user}
-                      </Text>
+                      <Text className="text-lg font-bold text-gray-700">Accept Request</Text>
+                      <Text className="text-xs text-gray-500">From: {r?._fromName}</Text>
                     </View>
                   </View>
 
-                  <MaterialIcons
-                    name="chevron-right"
-                    size={22}
-                    color="#334155"
-                  />
+                  <MaterialIcons name="chevron-right" size={22} color="#334155" />
                 </Pressable>
               ))
             )}
@@ -186,9 +245,7 @@ export default function Friends() {
           <View className="gap-3">
             {friends.length === 0 ? (
               <View className="bg-white/70 border border-gray-200 rounded-3xl p-5 shadow-sm">
-                <Text className="text-sm text-gray-600">
-                  No friends yet.
-                </Text>
+                <Text className="text-sm text-gray-600">No friends yet.</Text>
               </View>
             ) : (
               friends.map((f) => (
@@ -197,18 +254,12 @@ export default function Friends() {
                   className="bg-white border border-gray-200 rounded-3xl p-5 shadow-sm"
                 >
                   <View className="flex-row items-center gap-3">
-                    <MaterialIcons
-                      name="person"
-                      size={20}
-                      color="#64748b"
-                    />
+                    <Avatar uri={f.avatar_url} size={44} />
                     <View>
                       <Text className="text-lg font-bold text-gray-700">
                         {f.first_name} {f.last_name}
                       </Text>
-                      <Text className="text-sm text-gray-500">
-                        {f.email}
-                      </Text>
+                      <Text className="text-sm text-gray-500">{f.email}</Text>
                     </View>
                   </View>
                 </View>

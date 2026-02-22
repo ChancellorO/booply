@@ -93,6 +93,10 @@ export default function Profile() {
             "late_count",
             "punctuality_score",
             "top_percent_month",
+            "punctuality_streak",
+            "best_punctuality_streak",
+            "last_punctuality_result",
+            "last_punctuality_at",
           ].join(",")
         )
         .eq("id", user.id)
@@ -189,6 +193,37 @@ export default function Profile() {
     loadLocation();
   }, []);
 
+  useEffect(() => {
+  let channel;
+
+  (async () => {
+    const { data: userData } = await supabase.auth.getUser();
+    const uid = userData?.user?.id;
+    if (!uid) return;
+
+    channel = supabase
+      .channel(`profiles_${uid}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "profiles",
+          filter: `id=eq.${uid}`,
+        },
+        (payload) => {
+          // payload.new has the updated row
+          setProfile((prev) => ({ ...(prev || {}), ...(payload?.new || {}) }));
+        }
+      )
+      .subscribe();
+  })();
+
+  return () => {
+    if (channel) supabase.removeChannel(channel);
+  };
+}, []);
+
   const displayName = useMemo(() => {
     const fn = (profile?.first_name || "").trim();
     const ln = (profile?.last_name || "").trim();
@@ -205,7 +240,8 @@ export default function Profile() {
     return `${Math.round((onTime / total) * 100)}%`;
   }, [onTime, late]);
 
-  const score = Number.isFinite(profile?.punctuality_score) ? profile.punctuality_score : 0;
+const streak = Number.isFinite(profile?.punctuality_streak) ? profile.punctuality_streak : 0;
+const bestStreak = Number.isFinite(profile?.best_punctuality_streak) ? profile.best_punctuality_streak : 0;
   const topPercent = Number.isFinite(profile?.top_percent_month) ? profile.top_percent_month : null;
 
   async function onLogout() {
@@ -238,8 +274,11 @@ export default function Profile() {
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Profile</Text>
+        <View className="px-4 pt-10 pb-4">
+          <Text className="text-3xl font-bold text-gray-900">Profile</Text>
+          <Text className="mt-2 text-sm text-gray-600">
+            Booply Account
+          </Text>
         </View>
 
         {/* Profile Card */}
@@ -294,12 +333,12 @@ export default function Profile() {
         {/* Score Card */}
         <View style={styles.scoreCard}>
           <View style={styles.scoreLeft}>
-            <Text style={styles.scoreNumber}>{score}</Text>
+            <Text style={styles.scoreNumber}>{streak}</Text>
             <Ionicons name="flame" size={32} color="#f97316" />
           </View>
 
           <View style={{ alignItems: "flex-end" }}>
-            <Text style={styles.scoreLabel}>Punctuality Score</Text>
+            <Text style={styles.scoreLabel}>On-time Streak</Text>
             <Text style={styles.scoreSub}>
               {topPercent != null ? `Top ${topPercent}% this month` : "Keep it up this month"}
             </Text>
