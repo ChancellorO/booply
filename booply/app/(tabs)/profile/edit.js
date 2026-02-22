@@ -17,7 +17,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
+import { LinearGradient } from "expo-linear-gradient";
 import { supabase } from "../../../constants/supabase";
 
 const BLACK = "#18181b";
@@ -25,6 +25,7 @@ const GREEN = "#16a34a";
 const MUTED = "rgba(0,0,0,0.45)";
 const GLASS = "rgba(255,255,255,0.45)";
 const GLASS_BORDER = "rgba(255,255,255,0.6)";
+const gradientColors = ["#A9CBB2", "#CFE6D8", "#F7FBF8"];
 
 const fallbackAvatar = require("../../../assets/images/dumbways.png");
 
@@ -218,212 +219,149 @@ export default function EditProfile() {
 
   if (loading) {
     return (
-      <View style={[styles.safe, { alignItems: "center", justifyContent: "center" }]}>
-        <ActivityIndicator />
-      </View>
+      <LinearGradient
+        colors={gradientColors}
+        start={{ x: 0.15, y: 0 }}
+        end={{ x: 1, y: 0.85 }}
+        style={{ flex: 1, paddingTop: insets.top, justifyContent: "center", alignItems: "center" }}
+      >
+    <ActivityIndicator />
+  </LinearGradient>
     );
   }
 
   return (
-    <View style={styles.safe}>
+    <LinearGradient
+      colors={gradientColors}
+      start={{ x: 0.15, y: 0 }}
+      end={{ x: 1, y: 0.85 }}
+      style={{ flex: 1, paddingTop: insets.top }}
+    >
       <StatusBar barStyle="dark-content" />
 
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View style={{ flex: 1 }}>
           <ScrollView
-            contentContainerStyle={[styles.scroll, { paddingBottom: 140 + insets.bottom }]}
+            contentContainerStyle={[styles.scroll, { paddingBottom: 24 + insets.bottom }]}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
             {/* Header */}
-            <View style={styles.header}>
-              <Pressable onPress={() => router.back()} style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}>
-                <Ionicons name="chevron-back" size={20} color={BLACK} />
-              </Pressable>
-              <Text style={styles.headerTitle}>Edit Profile</Text>
-              <View style={{ width: 44, height: 44 }} />
+            <View className="px-4 pt-10 pb-4">
+              <View className="flex-row items-center justify-between">
+                <Pressable
+                  onPress={() => router.back()}
+                  className="bg-white border border-gray-300 rounded-full w-12 h-12 items-center justify-center shadow-sm"
+                >
+                  <Ionicons name="chevron-back" size={22} color="#374151" />
+                </Pressable>
+
+                <Text className="text-2xl font-bold text-gray-900">Edit profile</Text>
+
+                <View className="w-12 h-12" />
+              </View>
             </View>
 
             {/* Card */}
-            <View style={styles.card}>
-              <Text style={styles.sectionSmall}>Photo</Text>
+            <View
+              className="mx-4 rounded-3xl p-5 shadow-sm border border-white/60"
+              style={{ backgroundColor: "#F3FBFC" }}
+            >
+              <Text className="px-1 text-sm font-extrabold tracking-widest uppercase text-gray-700">
+                Photo
+              </Text>
 
-              <View style={styles.photoInnerRow}>
-                <View style={styles.avatarWrap}>
-                  {avatarUri ? (
-                    <Image source={{ uri: avatarUri }} style={styles.avatar} />
-                  ) : (
-                    <Image source={fallbackAvatar} style={styles.avatar} />
-                  )}
-                </View>
+              <View
+                className="mt-2 rounded-3xl p-5 shadow-sm border border-white/60"
+                style={{ backgroundColor: "#FFFFFFAA" }}
+              >
+                <View className="flex-row items-center gap-3">
+                  <View className="h-10 w-10 rounded-2xl bg-white/80 items-center justify-center border border-white/60">
+                    <Ionicons name="camera" size={18} color="#334155" />
+                  </View>
 
-                <View style={{ flex: 1, marginLeft: 14 }}>
-                  <Text style={styles.emailText} numberOfLines={1}>
-                    {displayEmail}
-                  </Text>
-
-                  <Pressable
-                    onPress={pickAndUploadPhoto}
-                    disabled={uploading}
-                    style={({ pressed }) => [
-                      styles.changePhotoBtn,
-                      pressed && styles.pressed,
-                      uploading && { opacity: 0.6 },
-                    ]}
-                  >
-                    <Ionicons name="camera" size={16} color={GREEN} />
-                    <Text style={styles.changePhotoText}>
-                      {uploading ? "Uploading..." : "Change Photo"}
+                  <View style={{ flex: 1 }}>
+                    <Text className="text-base font-semibold text-gray-800" numberOfLines={1}>
+                      {displayEmail}
                     </Text>
-                  </Pressable>
+
+                    <Pressable
+                      onPress={pickAndUploadPhoto}
+                      disabled={uploading}
+                      className="mt-2 bg-white border border-gray-300 rounded-full px-4 h-11 items-center justify-center shadow-sm self-start"
+                      style={uploading ? { opacity: 0.6 } : null}
+                    >
+                      <Text className="text-sm font-bold text-gray-700">
+                        {uploading ? "Uploading..." : "Change photo"}
+                      </Text>
+                    </Pressable>
+                  </View>
+
+                  <View className="w-16 h-16 rounded-full overflow-hidden border-2 border-white bg-gray-200">
+                    <Image
+                      source={avatarUri ? { uri: avatarUri } : fallbackAvatar}
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                  </View>
                 </View>
               </View>
 
-              {/* First name */}
-              <Text style={[styles.inputLabel, { marginTop: 18 }]}>First name</Text>
-              <View style={styles.inputBox}>
+              <Text className="mt-5 px-1 text-sm font-extrabold tracking-widest uppercase text-gray-700">
+                First name
+              </Text>
+              <View className="mt-2 bg-white border border-gray-300 rounded-2xl px-4 h-12 justify-center shadow-sm">
                 <TextInput
                   value={firstName}
                   onChangeText={setFirstName}
                   placeholder="First name"
-                  placeholderTextColor="rgba(0,0,0,0.35)"
-                  style={styles.input}
+                  placeholderTextColor="#6b7280"
+                  style={{ fontSize: 16, color: "#111827" }}
                   autoCapitalize="words"
                   returnKeyType="next"
                 />
               </View>
 
-              {/* Last name */}
-              <Text style={[styles.inputLabel, { marginTop: 14 }]}>Last name</Text>
-              <View style={styles.inputBox}>
+              <Text className="mt-4 px-1 text-sm font-extrabold tracking-widest uppercase text-gray-700">
+                Last name
+              </Text>
+              <View className="mt-2 bg-white border border-gray-300 rounded-2xl px-4 h-12 justify-center shadow-sm">
                 <TextInput
                   value={lastName}
                   onChangeText={setLastName}
                   placeholder="Last name"
-                  placeholderTextColor="rgba(0,0,0,0.35)"
-                  style={styles.input}
+                  placeholderTextColor="#6b7280"
+                  style={{ fontSize: 16, color: "#111827" }}
                   autoCapitalize="words"
                   returnKeyType="done"
                 />
               </View>
             </View>
+            {/* Save button */}
+            <View className="px-4 mt-4">
+              <Pressable
+                onPress={onSave}
+                disabled={saving}
+                className={`rounded-2xl px-5 py-3.5 border ${
+                  saving ? "bg-gray-200 border-gray-300" : "bg-white border-emerald-300"
+                }`}
+                style={saving ? { opacity: 0.8 } : null}
+              >
+                <Text
+                  className={`text-center text-base font-bold ${
+                    saving ? "text-gray-500" : "text-emerald-700"
+                  }`}
+                >
+                  {saving ? "Saving..." : "Save changes"}
+                </Text>
+              </Pressable>
+            </View>
           </ScrollView>
-
-          {/* ✅ Save button fixed */}
-          <View style={[styles.bottomBar, { bottom: 16 + insets.bottom }]}>
-            <Pressable
-              onPress={onSave}
-              disabled={saving}
-              style={({ pressed }) => [
-                styles.saveBtn,
-                pressed && { opacity: 0.9 },
-                saving && { opacity: 0.6 },
-              ]}
-            >
-              <Text style={styles.saveBtnText}>{saving ? "Saving..." : "Save"}</Text>
-            </Pressable>
-          </View>
         </View>
       </TouchableWithoutFeedback>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#e8edf2" },
-  scroll: { paddingBottom: 24 },
-
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingTop: 64,
-    paddingBottom: 18,
-  },
-  backBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: GLASS,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-  },
-  headerTitle: { fontSize: 20, fontWeight: "800", color: BLACK },
-
-  card: {
-    marginHorizontal: 16,
-    borderRadius: 26,
-    backgroundColor: GLASS,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER,
-    padding: 22,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 3,
-  },
-
-  sectionSmall: { fontSize: 14, fontWeight: "700", color: MUTED, marginBottom: 10 },
-  photoInnerRow: { flexDirection: "row", alignItems: "center" },
-
-  avatarWrap: {
-    width: 74,
-    height: 74,
-    borderRadius: 40,
-    overflow: "hidden",
-    borderWidth: 2,
-    borderColor: "rgba(0,0,0,0.20)",
-    backgroundColor: "rgba(255,255,255,0.40)",
-  },
-  avatar: { width: "100%", height: "100%" },
-
-  emailText: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "rgba(0,0,0,0.55)",
-    marginBottom: 6,
-  },
-
-  changePhotoBtn: { flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 8 },
-  changePhotoText: { fontSize: 18, fontWeight: "800", color: GREEN },
-
-  inputLabel: { fontSize: 16, fontWeight: "700", color: "rgba(0,0,0,0.45)", marginBottom: 10 },
-  inputBox: {
-    backgroundColor: "rgba(255,255,255,0.55)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.65)",
-    borderRadius: 18,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  input: { fontSize: 18, fontWeight: "600", color: BLACK },
-
-  bottomBar: {
-    position: "absolute",
-    left: 16,
-    right: 16,
-  },
-  saveBtn: {
-    borderRadius: 18,
-    backgroundColor: "#0f172a",
-    paddingVertical: 16,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.12,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 8,
-  },
-  saveBtnText: { color: "white", fontSize: 16, fontWeight: "900" },
-
-  pressed: { opacity: 0.75 },
 });

@@ -333,7 +333,7 @@ export default function Profile() {
 
           {/* Notifications */}
           <Pressable
-            onPress={() => router.push("/(tabs)/profile/edit")}
+            onPress={() => router.push("/(tabs)/profile/notifications")}
             style={({ pressed }) => [styles.menuItem, pressed && styles.menuItemPressed]}
           >
             <View style={styles.menuLeft}>
