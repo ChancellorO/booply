@@ -4,8 +4,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { useEffect } from "react";
 import { registerForPushAndSaveToken } from "../../constants/push";
 
-export default function TabsLayout() {
+const MINT = "#4FD1C5";
+const INACTIVE = "#9CA3AF";
+const BG = "#F7FBF8";
 
+export default function TabsLayout() {
     useEffect(() => {
     registerForPushAndSaveToken().catch((e) => console.log("push init err", e?.message ?? e));
     }, []);
@@ -13,17 +16,34 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
+
         tabBarShowLabel: true,
+        tabBarActiveTintColor: MINT,
+        tabBarInactiveTintColor: INACTIVE,
+
         tabBarLabelStyle: {
           fontSize: 11,
           marginTop: -2,
           paddingBottom: Platform.OS === "ios" ? 0 : 4,
         },
+
         tabBarStyle: {
-          height: Platform.OS === "ios" ? 84 : 64,
-          paddingTop: 10,
+          height: Platform.OS === "ios" ? 86 : 66,
+          paddingTop: 8,
+          paddingBottom: Platform.OS === "ios" ? 20 : 8,
+          backgroundColor: BG,
+
           borderTopWidth: 0,
           elevation: 0,
+
+          // soft, floating feel
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.05,
+          shadowRadius: 8,
+
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
         },
       }}
     >
